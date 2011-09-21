@@ -119,6 +119,9 @@ class Onkyo(object):
         Zone2 source: %s
         """ % (power, self._inputFromVal(source), z2power, self._inputFromVal(z2source))
 
+    def close(self):
+        self._oky.close()
+
     def getPower(self):
         return self._oky.cmd("PWRQSTN")[3:]
     def z2GetSource(self):
