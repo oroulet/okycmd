@@ -35,7 +35,7 @@ class OnkyoTCP(object):
         """
         #the code is formated to follow as clearly as possible the specification
         headersize = struct.pack( ">i", 16)
-        print "length cmd is ", len(cmd)
+        #print "length cmd is ", len(cmd)
         datasize = struct.pack( ">i",  len(cmd)+1 ) 
         version = "\x01"
         reserved = "\x00\x00\x00"
@@ -43,9 +43,9 @@ class OnkyoTCP(object):
         unittype = "1"
         end = "\r"
         header = "ISCP" + headersize + datasize + version + reserved 
-        print "length header ", len(header)
+        #print "length header ", len(header)
         line = header + datastart + unittype + cmd + end
-        print len(line), line
+        #print len(line), line
         self._socket.sendall(line)
         start = time.time()
         while True:
@@ -77,10 +77,10 @@ class OnkyoTCP(object):
             return "", msg
         headersize = struct.unpack(">i", msg[4:8])[0]
         size = struct.unpack(">i", msg[8:12])[0]
-        print "size of header is ", headersize 
-        print "size of data is ", size 
+        #print "size of header is ", headersize 
+        #print "size of data is ", size 
         totalsize = headersize + size # contrarely to cmd we send, it seems the datasize includes end and start chars 
-        print "total size should be ", totalsize 
+        #print "total size should be ", totalsize 
         if len(msg) < totalsize:
             return "", msg
         msg = msg[:totalsize]
@@ -94,9 +94,39 @@ class OnkyoTCP(object):
 class Onkyo(object):
     def __init__(self, ip="10.0.0.112", port=60128):
         self._oky = OnkyoTCP(ip, port)
+        self._input = dict(DVD="00",
+                GBL="01", 
+                PC="05",
+                SOURCE="80")
+
+    def _inputFromVal(self, val):
+        for k, v in self._input.items():
+            if v == val:
+                return k
 
     def connect(self):
         self._oky.connect()
+
+    def printState(self):
+        power = self.getPower()
+        source = self.getSource()
+        z2power = self.z2GetPower()
+        z2source = self.z2GetSource()
+        print """
+        Main power: %s
+        Main source: %s
+        Zone2 power: %s
+        Zone2 source: %s
+        """ % (power, self._inputFromVal(source), z2power, self._inputFromVal(z2source))
+
+    def getPower(self):
+        return self._oky.cmd("PWRQSTN")[3:]
+    def z2GetSource(self):
+        return self._oky.cmd("SLZQSTN")[3:]
+    def z2GetPower(self):
+        return self._oky.cmd("ZPWQSTN")[3:]
+    def getSource(self):
+        return self._oky.cmd("SLIQSTN")[3:]
 
     def power(self):
         self._oky.cmd("PWR01")
@@ -129,7 +159,7 @@ class Onkyo(object):
 
     def z2GetVolume(self):
         ans = self._oky.cmd("ZVLQSTN")
-        return ans
+        return ans[3:]
 
     def volumeup(self):
         self._oky.cmd("MVLUP")
