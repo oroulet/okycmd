@@ -83,26 +83,22 @@ class OnkyoTCP(object):
         cmd = data[2:-3] 
         return cmd, rest
 
+    def power(self):
+        self.cmd("PWR01")
+
+    def off(self):
+        self.cmd("PWR00")
+
+
     def z2power(self):
         self.cmd("ZPW01")
 
     def z2off(self):
         self.cmd("ZPW00")
 
-def usage():
-    pass
 
 if __name__ == "__main__":
-    if not len(sys.argv) > 2:
-        usage()
-    else:
-        onkyo = OnkyoTCP()
-        cmd = sys.argv[1]
-        if cmd == "z2off":
-            onkyo.z2off()
-        elif cmd == "z2on":
-            onkyo.z2power()
-        else:
-            usage()
+    onkyo = OnkyoTCP()
+    onkyo.connect()
 
 
