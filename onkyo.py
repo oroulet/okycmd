@@ -1,5 +1,4 @@
 import socket
-import sys
 import struct
 import time
 
@@ -7,6 +6,9 @@ class ISCPError(Exception):
     pass
 
 class OnkyoTCP(object):
+    """
+    control an onkyo receiver through its tcp interface
+    """
     def __init__(self, ip="10.0.0.112", port=60128):
         self._ip = ip
         self._port = port
@@ -14,11 +16,17 @@ class OnkyoTCP(object):
         self._rest = ""
 
     def connect(self):
-        print (self._ip, self._port)
+        """
+        connect to receiver
+        """
+        print "Connecting to: ", (self._ip, self._port)
         #small timeout, receiver is supposd to answer in 50 ms but it may take several seconds
         self._socket = socket.create_connection((self._ip, self._port), timeout=2)
 
     def close(self):
+        """
+        cleanup
+        """
         self._socket.close()
 
     def cmd(self, cmd):
@@ -36,11 +44,9 @@ class OnkyoTCP(object):
         end = "\r"
         header = "ISCP" + headersize + datasize + version + reserved 
         print "length header ", len(header)
-        self.line1 = header + datastart + unittype + cmd + end
-        self.line = "ISCP\x00\x00\x00\x10\x00\x00\x00" + chr(len(cmd)+1) + "\x01\x00\x00\x00!1" + cmd + "\x0D"
-        print len(self.line1), self.line1
-        print len(self.line), self.line
-        self._socket.sendall(self.line1)
+        line = header + datastart + unittype + cmd + end
+        print len(line), line
+        self._socket.sendall(line)
         start = time.time()
         while True:
             ans = self._readStream()
@@ -83,18 +89,46 @@ class OnkyoTCP(object):
         cmd = data[2:-3] 
         return cmd, rest
 
+
+
+class Onkyo(object):
+    def __init__(self, ip="10.0.0.112", port=60128):
+        self._oky = OnkyoTCP(ip, port)
+
     def power(self):
-        self.cmd("PWR01")
+        self._oky.cmd("PWR01")
 
     def off(self):
-        self.cmd("PWR00")
-
+        self._oky.cmd("PWR00")
 
     def z2power(self):
-        self.cmd("ZPW01")
+        self._oky.cmd("ZPW01")
 
     def z2off(self):
-        self.cmd("ZPW00")
+        self._oky.cmd("ZPW00")
+
+    def volumeup(self):
+        self._oky.cmd("MLVUP")
+
+    def volumedown(self):
+        self._oky.cmd("MLVDOWN")
+
+    def setVolume(self, val):
+        """
+        val must be between 0 and 80
+        """
+        if val < 0:
+            val = 0
+        elif val > 80:
+            val = 25 # do not break anything
+        else:
+            val = hex(val).upper()
+            self._oky.cmd("MLVD" + val[2:])
+
+    def getVolume(self):
+        ans = self._oky.cmd("MVLQSTN")
+        return ans
+        
 
 
 if __name__ == "__main__":
