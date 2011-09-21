@@ -50,7 +50,7 @@ class OnkyoTCP(object):
         start = time.time()
         while True:
             ans = self._readStream()
-            if ans == cmd:
+            if ans[:3] == cmd[:3]:
                 return ans
             if time.time() - start > 1:
                 raise ISCPError("Receiver did not correctly anknowledge command,  sent: %s, received: %s" % (cmd, ans))
@@ -95,6 +95,9 @@ class Onkyo(object):
     def __init__(self, ip="10.0.0.112", port=60128):
         self._oky = OnkyoTCP(ip, port)
 
+    def connect(self):
+        self._oky.connect()
+
     def power(self):
         self._oky.cmd("PWR01")
 
@@ -107,11 +110,32 @@ class Onkyo(object):
     def z2off(self):
         self._oky.cmd("ZPW00")
 
+    def z2VolumeUp(self):
+        self._oky.cmd("ZVLUP")
+    def z2VolumeDown(self):
+        self._oky.cmd("ZVLDOWN")
+
+    def z2SetVolume(self, val):
+        """
+        val must be between 0 and 80
+        """
+        if val < 0:
+            val = 0
+        elif val > 80:
+            val = 25 # do not break anything
+        else:
+            val = hex(val).upper()
+            self._oky.cmd("ZVL" + val[2:])
+
+    def z2GetVolume(self):
+        ans = self._oky.cmd("ZVLQSTN")
+        return ans
+
     def volumeup(self):
-        self._oky.cmd("MLVUP")
+        self._oky.cmd("MVLUP")
 
     def volumedown(self):
-        self._oky.cmd("MLVDOWN")
+        self._oky.cmd("MVLDOWN")
 
     def setVolume(self, val):
         """
@@ -123,7 +147,7 @@ class Onkyo(object):
             val = 25 # do not break anything
         else:
             val = hex(val).upper()
-            self._oky.cmd("MLVD" + val[2:])
+            self._oky.cmd("MVL" + val[2:])
 
     def getVolume(self):
         ans = self._oky.cmd("MVLQSTN")
