@@ -1,0 +1,3 @@
+This project includes 2 files
+    onkyo.py:  a library implemented the protocol to communicate with the onkyo receiver
+    oky: a command line interface to onkyo.py

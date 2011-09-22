@@ -1,0 +1,48 @@
+#!/usr/bin/python
+
+import sys
+import onkyo
+
+def usage():
+    print "Usage:"
+
+if __name__ == "__main__":
+    if not len(sys.argv) > 1:
+        usage()
+    else:
+        cmd = sys.argv[1]
+        cmd2 = ""
+        cmd3 = ""
+        if len(sys.argv) > 2:
+            cmd2 = sys.argv[2]
+        if len(sys.argv) > 3:
+            cmd3 = sys.argv[3]
+
+        oky = onkyo.Onkyo()
+        oky.connect()
+
+        if cmd == "z2":
+            if cmd2 == "off":
+                oky.z2off()
+            elif cmd2 == "on":
+                oky.z2power()
+            elif cmd2 == "source":
+                if cmd3:
+                    oky.z2SetSource(cmd3)
+                else:
+                    source =  oky.z2GetSource()
+                    print "Source is: ", source
+            else:
+                usage()
+        elif cmd == "state":
+            oky.printState()
+        elif cmd == "source":
+            if cmd2:
+                oky.setSource(cmd2)
+            else:
+                print "Source is: ", oky.getSource()
+        else:
+            usage()
+        oky.close()
+
+

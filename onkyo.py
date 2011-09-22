@@ -94,15 +94,14 @@ class OnkyoTCP(object):
 class Onkyo(object):
     def __init__(self, ip="10.0.0.112", port=60128):
         self._oky = OnkyoTCP(ip, port)
-        self._input = dict(DVD="00",
+        self._input2hex = dict(DVD="00",
                 GBL="01", 
                 PC="05",
                 SOURCE="80")
-
-    def _inputFromVal(self, val):
-        for k, v in self._input.items():
-            if v == val:
-                return k
+        #no bidirectional dict in python, so improvise
+        self._hex2input = {}
+        for k, v in self._input2hex.items():
+            self._hex2input[v] = k
 
     def connect(self):
         self._oky.connect()
@@ -110,26 +109,43 @@ class Onkyo(object):
     def printState(self):
         power = self.getPower()
         source = self.getSource()
-        z2power = self.z2GetPower()
-        z2source = self.z2GetSource()
+        vol = self.getVolume()
         print """
         Main power: %s
         Main source: %s
+        Main volume (0-100): %s
+
+        """ % (power, self._hex2input[source], vol)
+
+        z2power = self.z2GetPower()
+        z2source = self.z2GetSource()
+        z2vol = self.z2GetVolume()
+        print """
         Zone2 power: %s
         Zone2 source: %s
-        """ % (power, self._inputFromVal(source), z2power, self._inputFromVal(z2source))
+        Zone2 volume (0-100): %s
+        """ % (z2power, self._hex2input[z2source], z2vol)
 
     def close(self):
         self._oky.close()
 
     def getPower(self):
         return self._oky.cmd("PWRQSTN")[3:]
+
     def z2GetSource(self):
         return self._oky.cmd("SLZQSTN")[3:]
+
+    def z2SetSource(self, source):
+        self._oky.cmd("SLZ" + self._input2hex[source])
+
     def z2GetPower(self):
         return self._oky.cmd("ZPWQSTN")[3:]
+
     def getSource(self):
         return self._oky.cmd("SLIQSTN")[3:]
+
+    def setSource(self, source):
+        self._oky.cmd("SLI" + self._input2hex[source])
 
     def power(self):
         self._oky.cmd("PWR01")
@@ -162,7 +178,7 @@ class Onkyo(object):
 
     def z2GetVolume(self):
         ans = self._oky.cmd("ZVLQSTN")
-        return ans[3:]
+        return int(ans[3:], 16)
 
     def volumeup(self):
         self._oky.cmd("MVLUP")
@@ -184,12 +200,12 @@ class Onkyo(object):
 
     def getVolume(self):
         ans = self._oky.cmd("MVLQSTN")
-        return ans
+        return int(ans[3:], 16)
         
 
 
 if __name__ == "__main__":
-    onkyo = OnkyoTCP()
-    onkyo.connect()
+    oky = Onkyo()
+    oky.connect()
 
 
