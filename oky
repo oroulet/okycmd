@@ -26,6 +26,10 @@ if __name__ == "__main__":
                 oky.z2off()
             elif cmd2 == "on":
                 oky.z2power()
+            elif cmd2 == "+":
+                oky.z2VolumeUp()
+            elif cmd2 == "-":
+                oky.z2VolumeDown()
             elif cmd2 == "source":
                 if cmd3:
                     oky.z2SetSource(cmd3)
@@ -41,6 +45,10 @@ if __name__ == "__main__":
                 oky.setSource(cmd2)
             else:
                 print "Source is: ", oky.getSource()
+        elif cmd == "+":
+            oky.volumeUp()
+        elif cmd == "-":
+            oky.volumeDown()
         else:
             usage()
         oky.close()

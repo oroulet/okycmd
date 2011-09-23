@@ -94,10 +94,19 @@ class OnkyoTCP(object):
 class Onkyo(object):
     def __init__(self, ip="10.0.0.112", port=60128):
         self._oky = OnkyoTCP(ip, port)
-        self._input2hex = dict(DVD="00",
-                GBL="01", 
-                PC="05",
-                SOURCE="80")
+        self._input2hex = {
+                "CBL/STAT":"01", 
+                "PC":"05",
+                "BD/DVD":"10",
+                "VCR/DVR":"00",
+                "GAME":"02",
+                "AUX":"03",
+                "TUNER":"24",
+                "TV/CD":"23",
+                "PORT":"40",
+                "NET":"2B",
+                "USB":"29",
+                "SOURCE":"80"}
         #no bidirectional dict in python, so improvise
         self._hex2input = {}
         for k, v in self._input2hex.items():
@@ -180,10 +189,10 @@ class Onkyo(object):
         ans = self._oky.cmd("ZVLQSTN")
         return int(ans[3:], 16)
 
-    def volumeup(self):
+    def volumeUp(self):
         self._oky.cmd("MVLUP")
 
-    def volumedown(self):
+    def volumeDown(self):
         self._oky.cmd("MVLDOWN")
 
     def setVolume(self, val):
