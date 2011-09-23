@@ -44,7 +44,8 @@ if __name__ == "__main__":
             if cmd2:
                 oky.setSource(cmd2)
             else:
-                print "Source is: ", oky.getSource()
+                source =  oky.getSource()
+                print "Source is: ", source
         elif cmd == "+":
             oky.volumeUp()
         elif cmd == "-":

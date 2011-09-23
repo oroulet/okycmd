@@ -124,7 +124,7 @@ class Onkyo(object):
         Main source: %s
         Main volume (0-100): %s
 
-        """ % (power, self._hex2input[source], vol)
+        """ % (power, source, vol)
 
         z2power = self.z2GetPower()
         z2source = self.z2GetSource()
@@ -133,7 +133,7 @@ class Onkyo(object):
         Zone2 power: %s
         Zone2 source: %s
         Zone2 volume (0-100): %s
-        """ % (z2power, self._hex2input[z2source], z2vol)
+        """ % (z2power, z2source, z2vol)
 
     def close(self):
         self._oky.close()
@@ -142,7 +142,8 @@ class Onkyo(object):
         return self._oky.cmd("PWRQSTN")[3:]
 
     def z2GetSource(self):
-        return self._oky.cmd("SLZQSTN")[3:]
+        source =  self._oky.cmd("SLZQSTN")[3:]
+        return self._hex2input[source]
 
     def z2SetSource(self, source):
         self._oky.cmd("SLZ" + self._input2hex[source])
@@ -151,7 +152,8 @@ class Onkyo(object):
         return self._oky.cmd("ZPWQSTN")[3:]
 
     def getSource(self):
-        return self._oky.cmd("SLIQSTN")[3:]
+        source = self._oky.cmd("SLIQSTN")[3:]
+        return self._hex2input[source]
 
     def setSource(self, source):
         self._oky.cmd("SLI" + self._input2hex[source])
