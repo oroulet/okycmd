@@ -4,7 +4,18 @@ import sys
 import onkyo
 
 def usage():
-    print "Usage:"
+    print """
+    Usage:  oky [options][zone] command arguments
+    examples:
+        oky state               ; print state
+        oky source PC           ; set source to PC
+        oky z2 source SOURCE       ; set zone 2 source to the same as main zone
+        oky on                  ; power on main zone
+        oky z2 off              ; shut down zone 2
+        oky +                   ; increase volume
+        oky -                   ; decrease volume
+        
+        """
 
 if __name__ == "__main__":
     if not len(sys.argv) > 1:
@@ -27,19 +38,23 @@ if __name__ == "__main__":
             elif cmd2 == "on":
                 oky.z2power()
             elif cmd2 == "+":
-                oky.z2VolumeUp()
+                oky.z2volumeUp()
             elif cmd2 == "-":
-                oky.z2VolumeDown()
+                oky.z2volumeDown()
             elif cmd2 == "source":
                 if cmd3:
-                    oky.z2SetSource(cmd3)
+                    oky.z2setSource(cmd3)
                 else:
-                    source =  oky.z2GetSource()
+                    source =  oky.z2getSource()
                     print "Source is: ", source
             else:
                 usage()
         elif cmd == "state":
             oky.printState()
+        if cmd == "off":
+            oky.off()
+        elif cmd == "on":
+            oky.power()
         elif cmd == "source":
             if cmd2:
                 oky.setSource(cmd2)
@@ -47,9 +62,11 @@ if __name__ == "__main__":
                 source =  oky.getSource()
                 print "Source is: ", source
         elif cmd == "+":
-            oky.volumeUp()
+            val = oky.volumeUp()
+            print "Volume: ", val
         elif cmd == "-":
-            oky.volumeDown()
+            val = oky.volumeDown()
+            print "Volume: ", val
         else:
             usage()
         oky.close()

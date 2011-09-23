@@ -126,9 +126,9 @@ class Onkyo(object):
 
         """ % (power, source, vol)
 
-        z2power = self.z2GetPower()
-        z2source = self.z2GetSource()
-        z2vol = self.z2GetVolume()
+        z2power = self.z2getPower()
+        z2source = self.z2getSource()
+        z2vol = self.z2getVolume()
         print """
         Zone2 power: %s
         Zone2 source: %s
@@ -141,14 +141,14 @@ class Onkyo(object):
     def getPower(self):
         return self._oky.cmd("PWRQSTN")[3:]
 
-    def z2GetSource(self):
+    def z2getSource(self):
         source =  self._oky.cmd("SLZQSTN")[3:]
         return self._hex2input[source]
 
-    def z2SetSource(self, source):
+    def z2setSource(self, source):
         self._oky.cmd("SLZ" + self._input2hex[source])
 
-    def z2GetPower(self):
+    def z2getPower(self):
         return self._oky.cmd("ZPWQSTN")[3:]
 
     def getSource(self):
@@ -170,12 +170,12 @@ class Onkyo(object):
     def z2off(self):
         self._oky.cmd("ZPW00")
 
-    def z2VolumeUp(self):
+    def z2volumeUp(self):
         self._oky.cmd("ZVLUP")
-    def z2VolumeDown(self):
+    def z2volumeDown(self):
         self._oky.cmd("ZVLDOWN")
 
-    def z2SetVolume(self, val):
+    def z2setVolume(self, val):
         """
         val must be between 0 and 80
         """
@@ -187,15 +187,17 @@ class Onkyo(object):
             val = hex(val).upper()
             self._oky.cmd("ZVL" + val[2:])
 
-    def z2GetVolume(self):
+    def z2getVolume(self):
         ans = self._oky.cmd("ZVLQSTN")
         return int(ans[3:], 16)
 
     def volumeUp(self):
-        self._oky.cmd("MVLUP")
+        val = self._oky.cmd("MVLUP")[3:]
+        return int(val, 16)
 
     def volumeDown(self):
-        self._oky.cmd("MVLDOWN")
+        val = self._oky.cmd("MVLDOWN")[3:]
+        return int(val, 16)
 
     def setVolume(self, val):
         """
