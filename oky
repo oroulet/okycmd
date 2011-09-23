@@ -51,7 +51,7 @@ if __name__ == "__main__":
                 usage()
         elif cmd == "state":
             oky.printState()
-        if cmd == "off":
+        elif cmd == "off":
             oky.off()
         elif cmd == "on":
             oky.power()
