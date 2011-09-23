@@ -1,0 +1,13 @@
+Source: onkyocmd
+Maintainer: Olivier R-D <unknown@unknown>
+Section: python
+Priority: optional
+Build-Depends: python-all (>= 2.7), debhelper (>= 7.4.3)
+Standards-Version: 3.9.1
+
+Package: onkyocmd
+Architecture: all
+Depends: ${misc:Depends}, python(>2.7)
+Breaks: ${python:Breaks}
+Description: Network client to onkyo receiver
+
