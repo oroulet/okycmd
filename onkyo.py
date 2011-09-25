@@ -146,7 +146,8 @@ class Onkyo(object):
         return self._hex2input[source]
 
     def z2setSource(self, source):
-        self._oky.cmd("SLZ" + self._input2hex[source])
+        ans = self._oky.cmd("SLZ" + self._input2hex[source])
+        return ans[3:]
 
     def z2getPower(self):
         return self._oky.cmd("ZPWQSTN")[3:]
@@ -156,24 +157,32 @@ class Onkyo(object):
         return self._hex2input[source]
 
     def setSource(self, source):
-        self._oky.cmd("SLI" + self._input2hex[source])
+        ans = self._oky.cmd("SLI" + self._input2hex[source])
+        return ans[3:]
 
     def power(self):
-        self._oky.cmd("PWR01")
+        ans = self._oky.cmd("PWR01")
+        return ans[3:]
 
     def off(self):
-        self._oky.cmd("PWR00")
+        ans = self._oky.cmd("PWR00")
+        return ans[3:]
 
     def z2power(self):
-        self._oky.cmd("ZPW01")
+        ans = self._oky.cmd("ZPW01")
+        return ans[3:]
 
     def z2off(self):
-        self._oky.cmd("ZPW00")
+        ans = self._oky.cmd("ZPW00")
+        return ans[3:]
 
     def z2volumeUp(self):
-        self._oky.cmd("ZVLUP")
+        ans = self._oky.cmd("ZVLUP")
+        return int(ans[3:], 16)
+
     def z2volumeDown(self):
-        self._oky.cmd("ZVLDOWN")
+        ans = self._oky.cmd("ZVLDOWN")
+        return int(ans[3:], 16)
 
     def z2setVolume(self, val):
         """
@@ -185,7 +194,8 @@ class Onkyo(object):
             val = 25 # do not break anything
         else:
             val = hex(val).upper()
-            self._oky.cmd("ZVL" + val[2:])
+            ans = self._oky.cmd("ZVL" + val[2:])
+            return int(ans[3:], 16)
 
     def z2getVolume(self):
         ans = self._oky.cmd("ZVLQSTN")
@@ -209,7 +219,8 @@ class Onkyo(object):
             val = 25 # do not break anything
         else:
             val = hex(val).upper()
-            self._oky.cmd("MVL" + val[2:])
+            ans = self._oky.cmd("MVL" + val[2:])
+            return int(ans[3:], 16)
 
     def getVolume(self):
         ans = self._oky.cmd("MVLQSTN")

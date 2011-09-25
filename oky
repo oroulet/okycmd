@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
+import ConfigParser
 import sys
 import onkyo
 
 def usage():
     print """
-    Usage:  oky [options][zone] command arguments
+    Usage:  oky [options] [zone] command arguments
     examples:
         oky state               ; print state
         oky source PC           ; set source to PC
@@ -16,6 +17,21 @@ def usage():
         oky -                   ; decrease volume
         
         """
+
+def get_config_file():
+    return "/home/olivier/.okyrc"
+
+def save_ip(ip):
+    f = open(get_config_file())
+    f.write(ip)
+    f.close()
+
+def get_ip():
+    f = open(get_config_file())
+    ip =  f.readline()
+    f.close()
+    return ip
+
 
 if __name__ == "__main__":
     if not len(sys.argv) > 1:
@@ -29,8 +45,18 @@ if __name__ == "__main__":
         if len(sys.argv) > 3:
             cmd3 = sys.argv[3]
 
+        if cmd in ("-h", "-help", "help"):
+            usage()
+        elif cmd in ("ip", "address"):
+            save_ip( cmd2 )
+            print "stored default ip address:", ip
+
+        #ip = get_ip()
+
+        #oky = onkyo.Onkyo(ip)
         oky = onkyo.Onkyo()
         oky.connect()
+
 
         if cmd == "z2":
             if cmd2 == "off":
