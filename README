@@ -1,3 +1,6 @@
 This project includes 2 files
     onkyo.py:  a library implemented the protocol to communicate with the onkyo receiver
     oky: a command line interface to onkyo.py
+
+It has been developed for and tested with an Onkyo TX-NR609 but using older documentation for serial interface so it should in theory works with many models.
+Only the subset of commands I had use for are implemented.
