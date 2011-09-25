@@ -9,7 +9,7 @@ import os
 
 
 setup (name = "onkyocmd", 
-        version = "0.01",
+        version = "0.1",
         description = "Network client to onkyo receiver",
         author = "Olivier R-D",
         url = 'http://launchpad.net/onkyocmd',
