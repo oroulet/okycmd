@@ -1,13 +1,20 @@
 #!/usr/bin/python
+"""
+command line interface to onkyo.py
+"""
 
-import ConfigParser
 import sys
+import os
 import onkyo
 
 def usage():
     print """
+    oky is a command line client to the networked onkyo receivers
     Usage:  oky [options] [zone] command arguments
+    The IP address to use can set using the OKY_ADDRESS environment
+    or set using the oky ip command line
     examples:
+        oky ip 10.0.0.112       ; set default ip address og receiver
         oky state               ; print state
         oky source PC           ; set source to PC
         oky z2 source SOURCE       ; set zone 2 source to the same as main zone
@@ -19,18 +26,28 @@ def usage():
         """
 
 def get_config_file():
-    return "/home/olivier/.okyrc"
+    if os.name == "nt":
+        path = os.environ["APPDATA"]
+        path = os.path.join(path, "oky", "okyrc")
+    else:
+        path = os.environ["HOME"]
+        path = os.path.join(path, ".okyrc")
+    return path
 
-def save_ip(ip):
-    f = open(get_config_file())
-    f.write(ip)
-    f.close()
+def save_ip(address):
+    config = open(get_config_file(), "w")
+    config.write(address)
+    config.close()
 
 def get_ip():
-    f = open(get_config_file())
-    ip =  f.readline()
-    f.close()
-    return ip
+    path = get_config_file()
+    if not os.path.isfile(path):
+        return None
+    else:
+        config = open(get_config_file())
+        address =  config.readline()
+        config.close()
+        return address
 
 
 if __name__ == "__main__":
@@ -49,12 +66,19 @@ if __name__ == "__main__":
             usage()
         elif cmd in ("ip", "address"):
             save_ip( cmd2 )
-            print "stored default ip address:", ip
+            print "stored default ip address:", cmd2
+            sys.exit(1)
 
-        #ip = get_ip()
+        if os.environ.has_key("OKY_ADDRESS"):
+            ip = os.environ["OKY_ADDRESS"]
+        else:
+            ip = get_ip()
+        if not ip:
+            usage()
+            sys.exit(1)
 
-        #oky = onkyo.Onkyo(ip)
-        oky = onkyo.Onkyo()
+        oky = onkyo.Onkyo(ip=ip)
+        #oky = onkyo.Onkyo()
         oky.connect()
 
 
