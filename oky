@@ -102,6 +102,15 @@ if __name__ == "__main__":
                 else:
                     source =  oky.z2getSource()
                     print "Source is: ", source
+            elif cmd2 == "bass":
+                if cmd3 in ("+", "up"):
+                    bass, treble = oky.z2setBassUp()
+                elif cmd3 in ("-", "down"):
+                    bass, treble = oky.z2setBassDown()
+                else:
+                    bass, treble = oky.z2getTone()
+                print "Bass: ", bass
+                print "Treble: ", treble
             else:
                 usage()
         elif cmd == "state":

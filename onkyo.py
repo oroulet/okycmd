@@ -103,17 +103,22 @@ class Onkyo(object):
     def __init__(self, ip="10.0.0.112", port=60128):
         self._oky = OnkyoTCP(ip, port)
         self._input2hex = {
-                "CBL/STAT":"01", 
-                "PC":"05",
-                "BD/DVD":"10",
                 "VCR/DVR":"00",
+                "CBL/STAT":"01", 
                 "GAME":"02",
                 "AUX":"03",
-                "TUNER":"24",
+                "AUX2":"04",
+                "PC":"05",
+                "BD/DVD":"10",
                 "TV/CD":"23",
+                "TUNER":"24",
                 "PORT":"40",
-                "NET":"2B",
                 "USB":"29",
+                "USB2":"2A",
+                "NET":"2B",
+                "UP":"UP",
+                "DOWN":"DOWN",
+                "7F":"OFF",
                 "AUDISSEYSETUP":"FF",
                 "SOURCE":"80"}
         #no bidirectional dict in python, so improvise
@@ -160,6 +165,39 @@ class Onkyo(object):
 
     def z2getPower(self):
         return self._oky.cmd("ZPWQSTN")[3:]
+
+    def z2mute(self):
+        return self._oky.cmd("ZMT00")[3:]
+
+    def z2unmute(self):
+        return self._oky.cmd("ZMT01")[3:]
+
+    def z2bassUp(self):
+        val = self._oky.cmd("ZTNBUP")[3:]
+        if val == "N/A":
+            return val, val
+        else:
+            return int(val[:2], 16), int(val[2:], 16)
+
+    def z2bassDown(self):
+        val = self._oky.cmd("ZTNBDOWN")[3:]
+        if val == "N/A":
+            return val, val
+        else:
+            return int(val[:2], 16), int(val[2:], 16)
+
+    def z2getTone(self):
+        val =  self._oky.cmd("ZTNQSTN")[3:]
+        if val == "N/A":
+            return val, val
+        else:
+            return int(val[:2], 16), int(val[2:], 16)
+
+    def z2trebleUp(self):
+        return self._oky.cmd("ZTNTUP")[3:]
+
+    def z2trebleDown(self):
+        return self._oky.cmd("ZTNTDOWN")[3:]
 
     def getSource(self):
         source = self._oky.cmd("SLIQSTN")[3:]
