@@ -33,6 +33,7 @@ class OnkyoTCP(object):
         """
         send cmd to receiver with correct format
         """
+        print "Sending: ", cmd
         #the code is formated to follow as clearly as possible the specification
         headersize = struct.pack( ">i", 16)
         #print "length cmd is ", len(cmd)
@@ -57,6 +58,10 @@ class OnkyoTCP(object):
         return ans
 
     def _readStream(self):
+        """
+        read something from stream and return the first well formated packet
+        put the rest on a queue which is read at next call of this method
+        """
         ans = self._socket.recv(1024)
         ans = self._rest + ans
         cmd, self._rest = self._parse(ans)
@@ -92,6 +97,9 @@ class OnkyoTCP(object):
 
 
 class Onkyo(object):
+    """
+    class to send commands to a receiver.
+    """
     def __init__(self, ip="10.0.0.112", port=60128):
         self._oky = OnkyoTCP(ip, port)
         self._input2hex = {
@@ -106,6 +114,7 @@ class Onkyo(object):
                 "PORT":"40",
                 "NET":"2B",
                 "USB":"29",
+                "AUDISSEYSETUP":"FF",
                 "SOURCE":"80"}
         #no bidirectional dict in python, so improvise
         self._hex2input = {}
@@ -188,14 +197,9 @@ class Onkyo(object):
         """
         val must be between 0 and 80
         """
-        if val < 0:
-            val = 0
-        elif val > 80:
-            val = 25 # do not break anything
-        else:
-            val = hex(val).upper()
-            ans = self._oky.cmd("ZVL" + val[2:])
-            return int(ans[3:], 16)
+        val = self._formatVolume(val)
+        ans = self._oky.cmd("ZVL" + val)
+        return int(ans[3:], 16)
 
     def z2getVolume(self):
         ans = self._oky.cmd("ZVLQSTN")
@@ -213,14 +217,22 @@ class Onkyo(object):
         """
         val must be between 0 and 80
         """
+        val = self._formatVolume(val)
+        ans = self._oky.cmd("MVL" + val)
+        return int(ans[3:], 16)
+
+    def _formatVolume(self, val):
+        val = int(val)
         if val < 0:
             val = 0
         elif val > 80:
             val = 25 # do not break anything
-        else:
-            val = hex(val).upper()
-            ans = self._oky.cmd("MVL" + val[2:])
-            return int(ans[3:], 16)
+        val = hex(val).upper()[2:]
+        print val
+        if len(val) < 2:
+            print val
+            val = "0" + val  
+        return val
 
     def getVolume(self):
         ans = self._oky.cmd("MVLQSTN")
