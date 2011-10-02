@@ -93,7 +93,9 @@ if __name__ == "__main__":
         oky = onkyo.Onkyo(host=host, port=args.port, verbose=args.verbose)
         oky.connect()
 
-        if cmd == "cmd":
+        if cmd == "log":
+            oky._oky.log()
+        elif cmd == "cmd":
             if cmd2:
                 print "Sending raw command to receiver", cmd2
                 print oky.sendCommand(cmd2)

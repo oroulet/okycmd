@@ -1,6 +1,7 @@
 import socket
 import struct
 import time
+import sys
 
 class ISCPError(Exception):
     pass
@@ -64,11 +65,20 @@ class OnkyoTCP(object):
                 raise ISCPError("Receiver did not correctly anknowledge command,  sent: %s, received: %s" % (cmd, ans))
         return ans
 
-    def _readStream(self):
+    def log(self, output=sys.stdout):
+        while True:
+            ans = self._readStream(timeout=36000)
+            output.write(ans+"\n")
+            output.flush()
+
+    def _readStream(self, timeout=None):
         """
         read something from stream and return the first well formated packet
         put the rest on a queue which is read at next call of this method
         """
+        if timeout:
+            self._socket.settimeout(timeout)
+
         ans = self._socket.recv(1024)
         ans = self._rest + ans
         cmd, self._rest = self._parse(ans)
