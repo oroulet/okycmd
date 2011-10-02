@@ -54,8 +54,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Send commands to an Onkyo receiver', add_help=False, epilog=cmd_examples, formatter_class=argparse.RawDescriptionHelpFormatter )
     parser.add_argument('--help', '-h', help='Display help', default=False, action="store_true")
     parser.add_argument('--verbose', '-v', default=False, action="store_true", help='be verbose')
-    parser.add_argument('--ip', default="10.0.0.1", help='set ip address')
-    parser.add_argument('--port', default=68, help='set port')
+    parser.add_argument('--ip', default=None, help='set ip address')
+    parser.add_argument('--port', default=60128, help='set port')
     #parser.add_argument('cmd', nargs="+", help='command to send')
     parser.add_argument('cmd', nargs="*", help="kkkkkkkkkkkkkkK")
     
@@ -78,8 +78,10 @@ if __name__ == "__main__":
             save_ip( cmd2 )
             print "stored default ip address:", cmd2
             sys.exit(1)
-
-        if os.environ.has_key("OKY_ADDRESS"):
+        
+        if args.ip:
+            ip = args.ip
+        elif os.environ.has_key("OKY_ADDRESS"):
             ip = os.environ["OKY_ADDRESS"]
         else:
             ip = get_ip()
@@ -87,7 +89,7 @@ if __name__ == "__main__":
             parser.print_help()
             sys.exit(1)
 
-        oky = onkyo.Onkyo(ip=ip, verbose=args.verbose)
+        oky = onkyo.Onkyo(ip=ip, port=args.port, verbose=args.verbose)
         oky.connect()
 
 
@@ -151,6 +153,7 @@ if __name__ == "__main__":
             print "Volume is: ", val 
         else:
             parser.print_help()
+        print "oky: ok"
         oky.close()
 
 
