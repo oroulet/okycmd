@@ -52,18 +52,18 @@ if __name__ == "__main__":
 
 
     parser = argparse.ArgumentParser(description='Send commands to an Onkyo receiver', add_help=False, epilog=cmd_examples, formatter_class=argparse.RawDescriptionHelpFormatter )
-    parser.add_argument('--help', '-h', help='Display help', default=False, action="store_true")
+    #parser.add_argument('--help', '-h', help='Display help', default=False, action="store_true")
     parser.add_argument('--verbose', '-v', default=False, action="store_true", help='be verbose')
-    parser.add_argument('--ip', default=None, help='set ip address')
-    parser.add_argument('--port', default=60128, help='set port')
+    parser.add_argument('--host', "--ip", "-h", default=None, help='set ip address')
+    parser.add_argument('--port', "-p",  default=60128, help='set port')
     #parser.add_argument('cmd', nargs="+", help='command to send')
     parser.add_argument('cmd', nargs="*", help="kkkkkkkkkkkkkkK")
     
     args = parser.parse_args()
 
-    if args.help:
-        parser.print_help()
-        sys.exit(0)
+    #if args.help:
+        #parser.print_help()
+        #sys.exit(0)
 
     if True:
         cmd = args.cmd[0]
@@ -74,22 +74,22 @@ if __name__ == "__main__":
         if len(args.cmd) > 2:
             cmd3 = args.cmd[2]
 
-        if cmd in ("ip", "address"):
+        if cmd in ("host", "ip", "address"):
             save_ip( cmd2 )
             print "stored default ip address:", cmd2
             sys.exit(1)
         
-        if args.ip:
-            ip = args.ip
+        if args.host:
+            host = args.host
         elif os.environ.has_key("OKY_ADDRESS"):
-            ip = os.environ["OKY_ADDRESS"]
+            host = os.environ["OKY_ADDRESS"]
         else:
-            ip = get_ip()
-        if not ip:
+            host = get_ip()
+        if not host:
             parser.print_help()
             sys.exit(1)
 
-        oky = onkyo.Onkyo(ip=ip, port=args.port, verbose=args.verbose)
+        oky = onkyo.Onkyo(host=host, port=args.port, verbose=args.verbose)
         oky.connect()
 
 

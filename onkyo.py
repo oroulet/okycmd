@@ -9,8 +9,8 @@ class OnkyoTCP(object):
     """
     control an onkyo receiver through its tcp interface
     """
-    def __init__(self, ip="10.0.0.112", port=60128, verbose=False):
-        self._ip = ip
+    def __init__(self, host="10.0.0.112", port=60128, verbose=False):
+        self._ip = host
         self._port = port
         self._socket = None
         self._rest = ""
@@ -107,8 +107,8 @@ class Onkyo(object):
     """
     class to send commands to a receiver.
     """
-    def __init__(self, ip="10.0.0.112", port=60128, verbose=False):
-        self._oky = OnkyoTCP(ip, port, verbose=verbose)
+    def __init__(self, host="10.0.0.112", port=60128, verbose=False):
+        self._oky = OnkyoTCP(host, port, verbose=verbose)
         self._input2hex = {
                 "VCR/DVR":"00",
                 "CBL/STAT":"01", 
