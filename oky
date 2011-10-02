@@ -44,6 +44,7 @@ cmd examples:
     oky z2 off              ; shut down zone 2
     oky +                   ; increase volume
     oky -                   ; decrease volume
+    oky cmd IFVQSTN         ; send ISCP command to receiver
         
 """
 
@@ -92,8 +93,11 @@ if __name__ == "__main__":
         oky = onkyo.Onkyo(host=host, port=args.port, verbose=args.verbose)
         oky.connect()
 
-
-        if cmd == "z2":
+        if cmd == "cmd":
+            if cmd2:
+                print "Sending raw command to receiver", cmd2
+                print oky.sendCommand(cmd2)
+        elif cmd == "z2":
             #print "z2 command", cmd, cmd2, cmd3
             if cmd2 == "off":
                 oky.z2off()

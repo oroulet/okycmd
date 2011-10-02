@@ -136,6 +136,9 @@ class Onkyo(object):
     def connect(self):
         self._oky.connect()
 
+    def sendCommand(self, cmd):
+        return self._oky.cmd(cmd)
+
     def printState(self):
         power = self.getPower()
         source = self.getSource()
