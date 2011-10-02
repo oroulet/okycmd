@@ -139,15 +139,25 @@ class Onkyo(object):
     def sendCommand(self, cmd):
         return self._oky.cmd(cmd)
 
+    def getAudioInformation(self):
+        return self._oky.cmd("IFAQSTN")[3:]
+
+    def getVideoInformation(self):
+        return self._oky.cmd("IFVQSTN")[3:]
+
     def printState(self):
         power = self.getPower()
         source = self.getSource()
         vol = self.getVolume()
+        video = self.getVideoInformation()
+        audio = self.getAudioInformation()
         print """
         Main power: %s
         Main source: %s
         Main volume (0-100): %s
-        """ % (power, source, vol)
+        Main audio: %s
+        Main video: %s
+        """ % (power, source, vol, audio, video)
 
         z2power = self.z2getPower()
         z2source = self.z2getSource()
