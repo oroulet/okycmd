@@ -1,3 +1,7 @@
+"""
+library to control an onkyo receiver over TCP/IP
+it contains one client class called Onkyo
+"""
 import socket
 import struct
 import time
@@ -62,7 +66,7 @@ class OnkyoTCP(object):
             if ans[:3] == cmd[:3]:
                 return ans
             if time.time() - start > 1:
-                raise ISCPError("Receiver did not correctly anknowledge command,  sent: %s, received: %s" % (cmd, ans))
+                raise ISCPError("Receiver did not correctly acknowledge command,  sent: %s, received: %s" % (cmd, ans))
         return ans
 
     def log(self, output=sys.stdout):

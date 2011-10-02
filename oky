@@ -104,9 +104,11 @@ if __name__ == "__main__":
         elif cmd == "z2":
             #print "z2 command", cmd, cmd2, cmd3
             if cmd2 in ("off", "stop"):
-                oky.z2off()
+                val = oky.z2off()
+                print "Power: ", val
             elif cmd2 in ("start", "on"):
-                oky.z2power()
+                val = oky.z2power()
+                print "Power: ", val
             elif cmd2 == "+":
                 val = oky.z2volumeUp()
                 print "Volume is: ", val 
@@ -139,9 +141,11 @@ if __name__ == "__main__":
         elif cmd == "state":
             oky.printState()
         elif cmd in("stop", "off"):
-            oky.off()
+            val = oky.off()
+            print "Power: ", val
         elif cmd in ("on", "start"):
-            oky.power()
+            val = oky.power()
+            print "Power: ", val
         elif cmd == "source":
             if cmd2:
                 source = oky.setSource(cmd2)
@@ -162,7 +166,6 @@ if __name__ == "__main__":
             print "Volume: ", val 
         else:
             parser.print_help()
-        print "oky: ok"
         oky.close()
 
 
