@@ -5,25 +5,10 @@ command line interface to onkyo.py
 
 import sys
 import os
+import argparse
+
 import onkyo
 
-def usage():
-    print """
-    oky is a command line client to the networked onkyo receivers
-    Usage:  oky [options] [zone] command arguments
-    The IP address to use can set using the OKY_ADDRESS environment
-    or set using the oky ip command line
-    examples:
-        oky ip 10.0.0.112       ; set default ip address og receiver
-        oky state               ; print state
-        oky source PC           ; set source to PC
-        oky z2 source SOURCE       ; set zone 2 source to the same as main zone
-        oky on                  ; power on main zone
-        oky z2 off              ; shut down zone 2
-        oky +                   ; increase volume
-        oky -                   ; decrease volume
-        
-        """
 
 def get_config_file():
     if os.name == "nt":
@@ -49,39 +34,67 @@ def get_ip():
         config.close()
         return address
 
+cmd_examples = """
+cmd examples:
+    oky ip 10.0.0.112       ; set default ip address og receiver
+    oky state               ; print state 
+    oky source PC           ; set source to PC
+    oky z2 source SOURCE    ; set zone 2 source to the same as main zone
+    oky on                  ; power on main zone
+    oky z2 off              ; shut down zone 2
+    oky +                   ; increase volume
+    oky -                   ; decrease volume
+        
+"""
+
 
 if __name__ == "__main__":
-    if not len(sys.argv) > 1:
-        usage()
-    else:
-        cmd = sys.argv[1]
+
+
+    parser = argparse.ArgumentParser(description='Send commands to an Onkyo receiver', add_help=False, epilog=cmd_examples, formatter_class=argparse.RawDescriptionHelpFormatter )
+    #parser.add_argument('--help', '-h', help='Display help', default=False, action="store_true")
+    parser.add_argument('--verbose', '-v', default=False, action="store_true", help='be verbose')
+    parser.add_argument('--host', "--ip", "-h", default=None, help='set ip address')
+    parser.add_argument('--port', "-p",  default=60128, help='set port')
+    #parser.add_argument('cmd', nargs="+", help='command to send')
+    parser.add_argument('cmd', nargs="*", help="kkkkkkkkkkkkkkK")
+    
+    args = parser.parse_args()
+
+    #if args.help:
+        #parser.print_help()
+        #sys.exit(0)
+
+    if True:
+        cmd = args.cmd[0]
         cmd2 = ""
         cmd3 = ""
-        if len(sys.argv) > 2:
-            cmd2 = sys.argv[2]
-        if len(sys.argv) > 3:
-            cmd3 = sys.argv[3]
+        if len(args.cmd) > 1:
+            cmd2 = args.cmd[1]
+        if len(args.cmd) > 2:
+            cmd3 = args.cmd[2]
 
-        if cmd in ("-h", "-help", "help"):
-            usage()
-        elif cmd in ("ip", "address"):
+        if cmd in ("host", "ip", "address"):
             save_ip( cmd2 )
             print "stored default ip address:", cmd2
             sys.exit(1)
-
-        if os.environ.has_key("OKY_ADDRESS"):
-            ip = os.environ["OKY_ADDRESS"]
+        
+        if args.host:
+            host = args.host
+        elif os.environ.has_key("OKY_ADDRESS"):
+            host = os.environ["OKY_ADDRESS"]
         else:
-            ip = get_ip()
-        if not ip:
-            usage()
+            host = get_ip()
+        if not host:
+            parser.print_help()
             sys.exit(1)
 
-        oky = onkyo.Onkyo(ip=ip)
+        oky = onkyo.Onkyo(host=host, port=args.port, verbose=args.verbose)
         oky.connect()
 
 
         if cmd == "z2":
+            #print "z2 command", cmd, cmd2, cmd3
             if cmd2 == "off":
                 oky.z2off()
             elif cmd2 == "on":
@@ -104,15 +117,15 @@ if __name__ == "__main__":
                     print "Source is: ", source
             elif cmd2 == "bass":
                 if cmd3 in ("+", "up"):
-                    bass, treble = oky.z2setBassUp()
+                    bass, treble = oky.z2bassUp()
                 elif cmd3 in ("-", "down"):
-                    bass, treble = oky.z2setBassDown()
+                    bass, treble = oky.z2bassDown()
                 else:
                     bass, treble = oky.z2getTone()
                 print "Bass: ", bass
                 print "Treble: ", treble
             else:
-                usage()
+                parser.print_help()
         elif cmd == "state":
             oky.printState()
         elif cmd == "off":
@@ -139,7 +152,8 @@ if __name__ == "__main__":
                 val = oky.getVolume()
             print "Volume is: ", val 
         else:
-            usage()
+            parser.print_help()
+        print "oky: ok"
         oky.close()
 
 
