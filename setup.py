@@ -6,10 +6,15 @@ import glob
 import os
 
 
+from bzrlib.branch import Branch
 
+branch = Branch.open(".")
+rev = str(branch.revno())
+nick = branch.nick
+bzrstring = "bzr-" + nick + "-rev" + rev
 
 setup (name = "onkyocmd", 
-        version = "0.1",
+        version = bzrstring,
         description = "Network client to onkyo receiver",
         author = "Olivier R-D",
         url = 'http://launchpad.net/onkyocmd',

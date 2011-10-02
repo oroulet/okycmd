@@ -99,26 +99,28 @@ if __name__ == "__main__":
                 print oky.sendCommand(cmd2)
         elif cmd == "z2":
             #print "z2 command", cmd, cmd2, cmd3
-            if cmd2 == "off":
+            if cmd2 in ("off", "stop"):
                 oky.z2off()
-            elif cmd2 == "on":
+            elif cmd2 in ("start", "on"):
                 oky.z2power()
             elif cmd2 == "+":
-                oky.z2volumeUp()
+                val = oky.z2volumeUp()
+                print "Volume is: ", val 
             elif cmd2 == "-":
-                oky.z2volumeDown()
+                val = oky.z2volumeDown()
+                print "Volume: ", val 
             elif cmd2 in ("vol", "volume"):
                 if cmd3:
                     val = oky.z2setVolume(cmd3)
                 else:
                     val = oky.z2getVolume()
-                print "Volume is: ", val 
+                print "Volume: ", val 
             elif cmd2 == "source":
                 if cmd3:
                     oky.z2setSource(cmd3)
                 else:
                     source =  oky.z2getSource()
-                    print "Source is: ", source
+                    print "Source: ", source
             elif cmd2 == "bass":
                 if cmd3 in ("+", "up"):
                     bass, treble = oky.z2bassUp()
@@ -132,29 +134,28 @@ if __name__ == "__main__":
                 parser.print_help()
         elif cmd == "state":
             oky.printState()
-        elif cmd == "off":
+        elif cmd in("stop", "off"):
             oky.off()
-        elif cmd == "on":
+        elif cmd in ("on", "start"):
             oky.power()
         elif cmd == "source":
             if cmd2:
-                oky.setSource(cmd2)
+                source = oky.setSource(cmd2)
             else:
                 source =  oky.getSource()
-                print "Source is: ", source
+            print "Source: ", source
         elif cmd == "+":
             val = oky.volumeUp()
             print "Volume: ", val
         elif cmd == "-":
             val = oky.volumeDown()
             print "Volume: ", val
-
         elif cmd in ("vol", "volume"):
             if cmd2:
                 val = oky.setVolume(cmd2)
             else:
                 val = oky.getVolume()
-            print "Volume is: ", val 
+            print "Volume: ", val 
         else:
             parser.print_help()
         print "oky: ok"
