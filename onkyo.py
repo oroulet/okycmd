@@ -9,17 +9,23 @@ class OnkyoTCP(object):
     """
     control an onkyo receiver through its tcp interface
     """
-    def __init__(self, ip="10.0.0.112", port=60128):
+    def __init__(self, ip="10.0.0.112", port=60128, verbose=False):
         self._ip = ip
         self._port = port
         self._socket = None
         self._rest = ""
+        self._verbose = verbose
+
+    def _log(self, *args):
+        if self._verbose:
+            log = map(str, args)
+            print "Onkyo: ".join(log)
 
     def connect(self):
         """
         connect to receiver
         """
-        print "Connecting to: ", (self._ip, self._port)
+        self._log( "Connecting to: %s:%s" % (self._ip, self._port))
         #small timeout, receiver is supposd to answer in 50 ms but it may take several seconds
         self._socket = socket.create_connection((self._ip, self._port), timeout=2)
 
@@ -27,13 +33,14 @@ class OnkyoTCP(object):
         """
         cleanup
         """
+        self._log("Closing socket")
         self._socket.close()
 
     def cmd(self, cmd):
         """
         send cmd to receiver with correct format
         """
-        print "Sending: ", cmd
+        self._log( "Sending: ", cmd)
         #the code is formated to follow as clearly as possible the specification
         headersize = struct.pack( ">i", 16)
         #print "length cmd is ", len(cmd)
@@ -65,7 +72,7 @@ class OnkyoTCP(object):
         ans = self._socket.recv(1024)
         ans = self._rest + ans
         cmd, self._rest = self._parse(ans)
-        print "received: ", cmd
+        self._log( "received: ", cmd )
         return cmd
 
     def _parse(self, msg):
@@ -100,8 +107,8 @@ class Onkyo(object):
     """
     class to send commands to a receiver.
     """
-    def __init__(self, ip="10.0.0.112", port=60128):
-        self._oky = OnkyoTCP(ip, port)
+    def __init__(self, ip="10.0.0.112", port=60128, verbose=False):
+        self._oky = OnkyoTCP(ip, port, verbose=verbose)
         self._input2hex = {
                 "VCR/DVR":"00",
                 "CBL/STAT":"01", 
@@ -137,7 +144,6 @@ class Onkyo(object):
         Main power: %s
         Main source: %s
         Main volume (0-100): %s
-
         """ % (power, source, vol)
 
         z2power = self.z2getPower()
