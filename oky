@@ -67,8 +67,10 @@ if __name__ == "__main__":
     #if args.help:
         #parser.print_help()
         #sys.exit(0)
-
-    if True:
+    if not args.cmd:
+        parser.print_help()
+        sys.exit(1)
+    else:
         cmd = args.cmd[0]
         cmd2 = ""
         cmd3 = ""
