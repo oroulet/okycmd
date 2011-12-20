@@ -80,9 +80,13 @@ if __name__ == "__main__":
             cmd3 = args.cmd[2]
 
         if cmd in ("host", "ip", "address"):
-            save_ip( cmd2 )
-            print "stored default ip address:", cmd2
-            sys.exit(1)
+            if cmd2:
+                save_ip( cmd2 )
+                print "stored default ip address:", cmd2
+                sys.exit(0)
+            else:
+                parser.print_help()
+                sys.exit(1)
         
         if args.host:
             host = args.host
