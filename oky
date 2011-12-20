@@ -116,10 +116,10 @@ if __name__ == "__main__":
                 val = oky.z2power()
                 print "Power: ", val
             elif cmd2 == "+":
-                val = oky.z2volumeUp()
+                val = oky.z2volumeUp(cmd3)
                 print "Volume is: ", val 
             elif cmd2 == "-":
-                val = oky.z2volumeDown()
+                val = oky.z2volumeDown(cmd3)
                 print "Volume: ", val 
             elif cmd2 in ("vol", "volume"):
                 if cmd3:
@@ -159,10 +159,10 @@ if __name__ == "__main__":
                 source =  oky.getSource()
             print "Source: ", source
         elif cmd == "+":
-            val = oky.volumeUp()
+            val = oky.volumeUp(cmd2)
             print "Volume: ", val
         elif cmd == "-":
-            val = oky.volumeDown()
+            val = oky.volumeDown(cmd2)
             print "Volume: ", val
         elif cmd in ("vol", "volume"):
             if cmd2:

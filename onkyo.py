@@ -258,13 +258,22 @@ class Onkyo(object):
         ans = self._oky.cmd("ZPW00")
         return ans[3:]
 
-    def z2volumeUp(self):
-        ans = self._oky.cmd("ZVLUP")
-        return int(ans[3:], 16)
+    def z2volumeUp(self, val=None):
+        if not val:
+            ans = self._oky.cmd("ZVLUP")
+            return int(ans[3:], 16)
+        else:
+            current = self.z2getVolume()
+            return self.z2setVolume(current + int(val))
 
-    def z2volumeDown(self):
-        ans = self._oky.cmd("ZVLDOWN")
-        return int(ans[3:], 16)
+
+    def z2volumeDown(self, val=None):
+        if not val:
+            ans = self._oky.cmd("ZVLDOWN")
+            return int(ans[3:], 16)
+        else:
+            current = self.z2getVolume()
+            return self.z2setVolume(current - int(val))
 
     def z2setVolume(self, val):
         """
@@ -278,13 +287,21 @@ class Onkyo(object):
         ans = self._oky.cmd("ZVLQSTN")
         return int(ans[3:], 16)
 
-    def volumeUp(self):
-        val = self._oky.cmd("MVLUP")[3:]
-        return int(val, 16)
+    def volumeUp(self, val=None):
+        if not val:
+            ans = self._oky.cmd("MVLUP")
+            return int(ans[3:], 16)
+        else:
+            current = self.getVolume()
+            return self.setVolume(current + int(val))
 
-    def volumeDown(self):
-        val = self._oky.cmd("MVLDOWN")[3:]
-        return int(val, 16)
+    def volumeDown(self, val=None):
+        if not val:
+            ans = self._oky.cmd("MVLDOWN")
+            return int(ans[3:], 16)
+        else:
+            current = self.getVolume()
+            return self.setVolume(current - int(val))
 
     def setVolume(self, val):
         """
@@ -301,9 +318,7 @@ class Onkyo(object):
         elif val > 80:
             val = 25 # do not break anything
         val = hex(val).upper()[2:]
-        print val
         if len(val) < 2:
-            print val
             val = "0" + val  
         return val
 
