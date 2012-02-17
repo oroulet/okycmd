@@ -149,6 +149,12 @@ class Onkyo(object):
         for k, v in self._input2hex.items():
             self._hex2input[v] = k
 
+    def getSources(self):
+        return self._input2hex.keys()
+
+    def log(self):
+        self._oky.log()
+
     def connect(self):
         self._oky.connect()
 

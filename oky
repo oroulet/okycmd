@@ -39,6 +39,7 @@ cmd examples:
     oky ip 10.0.0.112       ; set default ip address og receiver
     oky state               ; print state 
     oky source PC           ; set source to PC
+    oky source              ; print current source and available sources
     oky z2 source SOURCE    ; set zone 2 source to the same as main zone
     oky source DLNA         ; set source DLNA(upnp) (this is a sub NET source) 
     oky source NETRADIO     ; set source NET/RADIO (this is a sub NET source) 
@@ -60,7 +61,7 @@ if __name__ == "__main__":
     parser.add_argument('--host', "--ip", "-h", default=None, help='set ip address')
     parser.add_argument('--port', "-p",  default=60128, help='set port')
     #parser.add_argument('cmd', nargs="+", help='command to send')
-    parser.add_argument('cmd', nargs="*", help="kkkkkkkkkkkkkkK")
+    parser.add_argument('cmd', nargs="*", help="see examples")
     
     args = parser.parse_args()
 
@@ -102,7 +103,7 @@ if __name__ == "__main__":
         oky.connect()
 
         if cmd == "log":
-            oky._oky.log()
+            oky.log()
         elif cmd == "cmd":
             if cmd2:
                 print "Sending raw command to receiver", cmd2
@@ -129,10 +130,13 @@ if __name__ == "__main__":
                 print "Volume: ", val 
             elif cmd2 == "source":
                 if cmd3:
-                    oky.z2setSource(cmd3)
+                    source = oky.z2setSource(cmd3)
+                    print "Source: ", oky.z2getSource()
                 else:
                     source =  oky.z2getSource()
+                    sources = oky.getSources()
                     print "Source: ", source
+                    print "Available sources: ", sources
             elif cmd2 == "bass":
                 if cmd3 in ("+", "up"):
                     bass, treble = oky.z2bassUp()
@@ -157,7 +161,9 @@ if __name__ == "__main__":
                 source = oky.setSource(cmd2)
             else:
                 source =  oky.getSource()
+            sources = oky.getSources()
             print "Source: ", source
+            print "Available sources: ", sources
         elif cmd == "+":
             val = oky.volumeUp(cmd2)
             print "Volume: ", val
