@@ -292,7 +292,7 @@ class Onkyo(object):
 
     def z2getVolume(self):
         ans = self._oky.cmd("ZVLQSTN")
-        if ans == "N/A":#FIXME: what should I do? return string or Noen
+        if ans == "ZVLN/A":#FIXME: what should I do? return string or Noen
             return 0 
         return int(ans[3:], 16)
 
@@ -333,7 +333,7 @@ class Onkyo(object):
 
     def getVolume(self):
         ans = self._oky.cmd("MVLQSTN")
-        if ans == "N/A":
+        if ans == "MVLN/A":
             return 0
         return int(ans[3:], 16)
         
