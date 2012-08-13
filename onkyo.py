@@ -20,6 +20,7 @@ class OnkyoTCP(object):
         self._socket = None
         self._rest = ""
         self._verbose = verbose
+        self.lastmsg = "" # debugging
 
     def _log(self, *args):
         if self._verbose:
@@ -96,7 +97,7 @@ class OnkyoTCP(object):
         en example answer is:
         'ISCP\x00\x00\x00\x10\x00\x00\x00\n\x01\x00\x00\x00!1PWR00\x1a\r\n'
         """
-        self.msg = msg # debuging
+        self.lastmsg = msg # debuging
         while msg and not msg.startswith("ISCP"):
             msg = msg[1:]
         if len(msg) < 12:
@@ -291,8 +292,8 @@ class Onkyo(object):
 
     def z2getVolume(self):
         ans = self._oky.cmd("ZVLQSTN")
-        if ans == "N/A":
-            return ans #FIXME: what should I do? return string or Noen
+        if ans == "N/A":#FIXME: what should I do? return string or Noen
+            return 0 
         return int(ans[3:], 16)
 
     def volumeUp(self, val=None):
@@ -332,8 +333,8 @@ class Onkyo(object):
 
     def getVolume(self):
         ans = self._oky.cmd("MVLQSTN")
-        if and = "N/A":
-            return ans
+        if ans == "N/A":
+            return 0
         return int(ans[3:], 16)
         
 
