@@ -6,6 +6,7 @@ command line interface to onkyo.py
 import sys
 import os
 import argparse
+import socket
 
 import onkyo
 
@@ -50,7 +51,83 @@ cmd examples:
     oky cmd IFVQSTN         ; send ISCP command to receiver
         
 """
-
+def main(oky, parser):
+    if cmd == "log":
+        oky.log()
+    elif cmd == "cmd":
+        if cmd2:
+            print "Sending raw command to receiver", cmd2
+            print oky.sendCommand(cmd2)
+    elif cmd == "z2":
+        #print "z2 command", cmd, cmd2, cmd3
+        if cmd2 in ("off", "stop"):
+            val = oky.z2off()
+            print "Power: ", val
+        elif cmd2 in ("start", "on"):
+            val = oky.z2power()
+            print "Power: ", val
+        elif cmd2 == "+":
+            val = oky.z2volumeUp(cmd3)
+            print "Volume is: ", val 
+        elif cmd2 == "-":
+            val = oky.z2volumeDown(cmd3)
+            print "Volume: ", val 
+        elif cmd2 in ("vol", "volume"):
+            if cmd3:
+                val = oky.z2setVolume(cmd3)
+            else:
+                val = oky.z2getVolume()
+            print "Volume: ", val 
+        elif cmd2 == "source":
+            if cmd3:
+                source = oky.z2setSource(cmd3)
+                print "Source: ", oky.z2getSource()
+            else:
+                source =  oky.z2getSource()
+                sources = oky.getSources()
+                print "Source: ", source
+                print "Available sources: ", sources
+        elif cmd2 == "bass":
+            if cmd3 in ("+", "up"):
+                bass, treble = oky.z2bassUp()
+            elif cmd3 in ("-", "down"):
+                bass, treble = oky.z2bassDown()
+            else:
+                bass, treble = oky.z2getTone()
+            print "Bass: ", bass
+            print "Treble: ", treble
+        else:
+            parser.print_help()
+    elif cmd == "state":
+        oky.printState()
+    elif cmd in("stop", "off"):
+        val = oky.off()
+        print "Power: ", val
+    elif cmd in ("on", "start"):
+        val = oky.power()
+        print "Power: ", val
+    elif cmd == "source":
+        if cmd2:
+            source = oky.setSource(cmd2)
+        else:
+            source =  oky.getSource()
+        sources = oky.getSources()
+        print "Source: ", source
+        print "Available sources: ", sources
+    elif cmd == "+":
+        val = oky.volumeUp(cmd2)
+        print "Volume: ", val
+    elif cmd == "-":
+        val = oky.volumeDown(cmd2)
+        print "Volume: ", val
+    elif cmd in ("vol", "volume"):
+        if cmd2:
+            val = oky.setVolume(cmd2)
+        else:
+            val = oky.getVolume()
+        print "Volume: ", val 
+    else:
+        parser.print_help()
 
 if __name__ == "__main__":
 
@@ -100,84 +177,13 @@ if __name__ == "__main__":
             sys.exit(1)
 
         oky = onkyo.Onkyo(host=host, port=args.port, verbose=args.verbose)
-        oky.connect()
+        try:
+            oky.connect()
+        except socket.error, ex:
+            print "Error connecting to device: ", ex
+            sys.exit(1)
 
-        if cmd == "log":
-            oky.log()
-        elif cmd == "cmd":
-            if cmd2:
-                print "Sending raw command to receiver", cmd2
-                print oky.sendCommand(cmd2)
-        elif cmd == "z2":
-            #print "z2 command", cmd, cmd2, cmd3
-            if cmd2 in ("off", "stop"):
-                val = oky.z2off()
-                print "Power: ", val
-            elif cmd2 in ("start", "on"):
-                val = oky.z2power()
-                print "Power: ", val
-            elif cmd2 == "+":
-                val = oky.z2volumeUp(cmd3)
-                print "Volume is: ", val 
-            elif cmd2 == "-":
-                val = oky.z2volumeDown(cmd3)
-                print "Volume: ", val 
-            elif cmd2 in ("vol", "volume"):
-                if cmd3:
-                    val = oky.z2setVolume(cmd3)
-                else:
-                    val = oky.z2getVolume()
-                print "Volume: ", val 
-            elif cmd2 == "source":
-                if cmd3:
-                    source = oky.z2setSource(cmd3)
-                    print "Source: ", oky.z2getSource()
-                else:
-                    source =  oky.z2getSource()
-                    sources = oky.getSources()
-                    print "Source: ", source
-                    print "Available sources: ", sources
-            elif cmd2 == "bass":
-                if cmd3 in ("+", "up"):
-                    bass, treble = oky.z2bassUp()
-                elif cmd3 in ("-", "down"):
-                    bass, treble = oky.z2bassDown()
-                else:
-                    bass, treble = oky.z2getTone()
-                print "Bass: ", bass
-                print "Treble: ", treble
-            else:
-                parser.print_help()
-        elif cmd == "state":
-            oky.printState()
-        elif cmd in("stop", "off"):
-            val = oky.off()
-            print "Power: ", val
-        elif cmd in ("on", "start"):
-            val = oky.power()
-            print "Power: ", val
-        elif cmd == "source":
-            if cmd2:
-                source = oky.setSource(cmd2)
-            else:
-                source =  oky.getSource()
-            sources = oky.getSources()
-            print "Source: ", source
-            print "Available sources: ", sources
-        elif cmd == "+":
-            val = oky.volumeUp(cmd2)
-            print "Volume: ", val
-        elif cmd == "-":
-            val = oky.volumeDown(cmd2)
-            print "Volume: ", val
-        elif cmd in ("vol", "volume"):
-            if cmd2:
-                val = oky.setVolume(cmd2)
-            else:
-                val = oky.getVolume()
-            print "Volume: ", val 
-        else:
-            parser.print_help()
+        main(oky, parser)
         oky.close()
 
 
