@@ -7,6 +7,16 @@ import struct
 import time
 import sys
 
+
+__author__ = "Olivier Roulet-Dubonnet"
+__copyright__ = "Copyright 2011-2012, Olivier Roulet-Dubonnet"
+__credits__ = ["Olivier Roulet-Dubonnet"]
+__license__ = "GPLv3"
+__version__ = "0.3"
+__status__ = "Development"
+
+
+
 class ISCPError(Exception):
     pass
 

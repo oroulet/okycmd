@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """
 command line interface to onkyo.py
 """
@@ -10,6 +10,12 @@ import socket
 
 import onkyo
 
+__author__ = "Olivier Roulet-Dubonnet"
+__copyright__ = "Copyright 2011-2012, Olivier Roulet-Dubonnet"
+__credits__ = ["Olivier Roulet-Dubonnet"]
+__license__ = "GPLv3"
+__version__ = "0.3"
+__status__ = "Development"
 
 def get_config_file():
     if os.name == "nt":
