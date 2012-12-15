@@ -18,14 +18,14 @@ class OnkyoTCP(object):
         self._ip = host
         self._port = port
         self._socket = None
-        self._rest = ""
+        self._rest = bytes()
         self._verbose = verbose
         self.lastmsg = "" # debugging
 
     def _log(self, *args):
         if self._verbose:
-            log = map(str, args)
-            print "Onkyo: ".join(log)
+            log = [str(i) for i in args]
+            print("Onkyo: ".join(log))
 
     def connect(self):
         """
@@ -46,17 +46,19 @@ class OnkyoTCP(object):
         """
         send cmd to receiver with correct format
         """
+        if type(cmd) == str:
+            cmd = cmd.encode() # create byte string from text string otherwise hope it is a byte array
         self._log( "Sending: ", cmd)
         #the code is formated to follow as clearly as possible the specification
         headersize = struct.pack( ">i", 16)
         #print "length cmd is ", len(cmd)
         datasize = struct.pack( ">i",  len(cmd)+1 ) 
-        version = "\x01"
-        reserved = "\x00\x00\x00"
-        datastart = "!"
-        unittype = "1"
-        end = "\r"
-        header = "ISCP" + headersize + datasize + version + reserved 
+        version = b"\x01"
+        reserved = b"\x00\x00\x00"
+        datastart = b"!"
+        unittype = b"1"
+        end = b"\r"
+        header = b"ISCP" + headersize + datasize + version + reserved 
         #print "length header ", len(header)
         line = header + datastart + unittype + cmd + end
         #print len(line), line
@@ -98,7 +100,7 @@ class OnkyoTCP(object):
         'ISCP\x00\x00\x00\x10\x00\x00\x00\n\x01\x00\x00\x00!1PWR00\x1a\r\n'
         """
         self.lastmsg = msg # debuging
-        while msg and not msg.startswith("ISCP"):
+        while msg and not msg.startswith(b"ISCP"):
             msg = msg[1:]
         if len(msg) < 12:
             return "", msg
@@ -125,33 +127,33 @@ class Onkyo(object):
     def __init__(self, host="10.0.0.112", port=60128, verbose=False):
         self._oky = OnkyoTCP(host, port, verbose=verbose)
         self._input2hex = {
-                "VCR/DVR":"00",
-                "CBL/STAT":"01", 
-                "GAME":"02",
-                "AUX":"03",
-                "AUX2":"04",
-                "PC":"05",
-                "BD/DVD":"10",
-                "TV/CD":"23",
-                "TUNER":"24",
-                "USB":"29",
-                "USB2":"2A",
-                "NET":"2B",
-                "DLNA":"27",
-                "NETRADIO":"28",
-                "PORT":"40",
-                "UP":"UP",
-                "DOWN":"DOWN",
-                "7F":"OFF",
-                "AUDISSEYSETUP":"FF",
-                "SOURCE":"80"}
+                "VCR/DVR":b"00",
+                "CBL/STAT":b"01", 
+                "GAME":b"02",
+                "AUX":b"03",
+                "AUX2":b"04",
+                "PC":b"05",
+                "BD/DVD":b"10",
+                "TV/CD":b"23",
+                "TUNER":b"24",
+                "USB":b"29",
+                "USB2":b"2A",
+                "NET":b"2B",
+                "DLNA":b"27",
+                "NETRADIO":b"28",
+                "PORT":b"40",
+                "UP":b"UP",
+                "DOWN":b"DOWN",
+                "7F":b"OFF",
+                "AUDISSEYSETUP":b"FF",
+                "SOURCE":b"80"}
         #no bidirectional dict in python, so improvise
         self._hex2input = {}
         for k, v in self._input2hex.items():
             self._hex2input[v] = k
 
     def getSources(self):
-        return self._input2hex.keys()
+        return sorted(self._input2hex.keys())
 
     def log(self):
         self._oky.log()
@@ -174,22 +176,24 @@ class Onkyo(object):
         vol = self.getVolume()
         video = self.getVideoInformation()
         audio = self.getAudioInformation()
-        print """
+        print("""
         Main power: %s
         Main source: %s
         Main volume (0-100): %s
         Main audio: %s
         Main video: %s
         """ % (power, source, vol, audio, video)
+        )
 
         z2power = self.z2getPower()
         z2source = self.z2getSource()
         z2vol = self.z2getVolume()
-        print """
+        print("""
         Zone2 power: %s
         Zone2 source: %s
         Zone2 volume (0-100): %s
         """ % (z2power, z2source, z2vol)
+        )
 
     def close(self):
         self._oky.close()
@@ -216,21 +220,21 @@ class Onkyo(object):
 
     def z2bassUp(self):
         val = self._oky.cmd("ZTNBUP")[3:]
-        if val == "N/A":
+        if val == b"N/A":
             return val, val
         else:
             return int(val[:2], 16), int(val[2:], 16)
 
     def z2bassDown(self):
         val = self._oky.cmd("ZTNBDOWN")[3:]
-        if val == "N/A":
+        if val == b"N/A":
             return val, val
         else:
             return int(val[:2], 16), int(val[2:], 16)
 
     def z2getTone(self):
         val =  self._oky.cmd("ZTNQSTN")[3:]
-        if val == "N/A":
+        if val == b"N/A":
             return val, val
         else:
             return int(val[:2], 16), int(val[2:], 16)
@@ -246,8 +250,8 @@ class Onkyo(object):
         return self._hex2input[source]
 
     def setSource(self, source):
-        ans = self._oky.cmd("SLI" + self._input2hex[source])
-        return ans[3:]
+        ans = self._oky.cmd(b"SLI" + self._input2hex[source])
+        return self._hex2input[ans[3:]]
 
     def power(self):
         ans = self._oky.cmd("PWR01")
@@ -292,7 +296,7 @@ class Onkyo(object):
 
     def z2getVolume(self):
         ans = self._oky.cmd("ZVLQSTN")
-        if ans == "ZVLN/A":#FIXME: what should I do? return string or Noen
+        if ans == b"ZVLN/A":#FIXME: what should I do? return string or Noen
             return 0 
         return int(ans[3:], 16)
 
@@ -326,14 +330,14 @@ class Onkyo(object):
             val = 0
         elif val > 80:
             val = 25 # do not break anything
-        val = hex(val).upper()[2:]
+        val = hex(val).upper()[2:].encode()
         if len(val) < 2:
-            val = "0" + val  
+            val = b"0" + val  
         return val
 
     def getVolume(self):
         ans = self._oky.cmd("MVLQSTN")
-        if ans == "MVLN/A":
+        if ans == b"MVLN/A":
             return 0
         return int(ans[3:], 16)
         
