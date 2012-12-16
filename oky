@@ -143,14 +143,10 @@ if __name__ == "__main__":
     parser.add_argument('--verbose', '-v', default=False, action="store_true", help='be verbose')
     parser.add_argument('--host', "--ip", "-h", default=None, help='set ip address')
     parser.add_argument('--port', "-p",  default=60128, help='set port')
-    #parser.add_argument('cmd', nargs="+", help='command to send')
     parser.add_argument('cmd', nargs="*", help="see examples")
     
     args = parser.parse_args()
 
-    #if args.help:
-        #parser.print_help()
-        #sys.exit(0)
     if not args.cmd:
         parser.print_help()
         sys.exit(1)

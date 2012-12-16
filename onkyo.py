@@ -42,7 +42,7 @@ class OnkyoTCP(object):
         connect to receiver
         """
         self._log( "Connecting to: %s:%s" % (self._ip, self._port))
-        #small timeout, receiver is supposd to answer in 50 ms but it may take several seconds
+        #receiver is supposd to answer in 50 ms but in practice this may take several seconds
         self._socket = socket.create_connection((self._ip, self._port), timeout=2)
 
     def close(self):
@@ -55,13 +55,12 @@ class OnkyoTCP(object):
     def cmd(self, cmd):
         """
         send cmd to receiver with correct format
+        the code is formated to follow as clearly as possible the specification, not to be efficient
         """
         if type(cmd) == str:
             cmd = cmd.encode() # create byte string from text string otherwise hope it is a byte array
         self._log( "Sending: ", cmd)
-        #the code is formated to follow as clearly as possible the specification
         headersize = struct.pack( ">i", 16)
-        #print "length cmd is ", len(cmd)
         datasize = struct.pack( ">i",  len(cmd)+1 ) 
         version = b"\x01"
         reserved = b"\x00\x00\x00"
@@ -69,9 +68,7 @@ class OnkyoTCP(object):
         unittype = b"1"
         end = b"\r"
         header = b"ISCP" + headersize + datasize + version + reserved 
-        #print "length header ", len(header)
         line = header + datastart + unittype + cmd + end
-        #print len(line), line
         self._socket.sendall(line)
         start = time.time()
         while True:
