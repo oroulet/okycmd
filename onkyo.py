@@ -2,11 +2,6 @@
 library to control an onkyo receiver over TCP/IP
 it contains one client class called Onkyo
 """
-import socket
-import struct
-import time
-import sys
-
 
 __author__ = "Olivier Roulet-Dubonnet"
 __copyright__ = "Copyright 2011-2012, Olivier Roulet-Dubonnet"
@@ -16,9 +11,15 @@ __version__ = "0.3"
 __status__ = "Development"
 
 
+import socket
+import struct
+import time
+import sys
+
 
 class ISCPError(Exception):
     pass
+
 
 class OnkyoTCP(object):
     """
