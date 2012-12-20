@@ -4,14 +4,18 @@ from distutils.command.install_data import install_data
 
 import glob
 import os
+import subprocess
 
 
-from bzrlib.branch import Branch
-
-branch = Branch.open(".")
-rev = str(branch.revno())
-nick = branch.nick
-bzrstring = "bzr-" + nick + "-rev" + rev
+#from bzrlib.branch import Branch
+#
+#branch = Branch.open(".")
+#rev = str(branch.revno())
+#nick = branch.nick
+#bzrstring = "bzr-" + nick + "-rev" + rev
+# bzrlib is not available for python3 so back to using external process
+rev = subprocess.check_output("bzr version-info --check-clean --custom --template='{revno}'", shell=True)
+bzrstring = "bzr" + str(rev)
 
 setup (name = "onkyocmd", 
         version = bzrstring,
