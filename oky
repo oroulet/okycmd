@@ -17,44 +17,21 @@ __license__ = "GPLv3"
 __version__ = "0.3"
 __status__ = "Development"
 
-def get_config_file():
-    if os.name == "nt":
-        path = os.environ["APPDATA"]
-        path = os.path.join(path, "oky", "okyrc")
-    else:
-        path = os.environ["HOME"]
-        path = os.path.join(path, ".okyrc")
-    return path
-
-def save_ip(address):
-    config = open(get_config_file(), "w")
-    config.write(address)
-    config.close()
-
-def get_ip():
-    path = get_config_file()
-    if not os.path.isfile(path):
-        return None
-    else:
-        config = open(get_config_file())
-        address =  config.readline()
-        config.close()
-        return address
-
 cmd_examples = """
+Receiver IP address can be set using ONKYOCMD_IP environment variable
+
 cmd examples:
-    oky ip 10.0.0.112       ; set default ip address og receiver
-    oky state               ; print state 
-    oky source PC           ; set source to PC
-    oky source              ; print current source and available sources
-    oky z2 source SOURCE    ; set zone 2 source to the same as main zone
-    oky source DLNA         ; set source DLNA(upnp) (this is a sub NET source) 
-    oky source NETRADIO     ; set source NET/RADIO (this is a sub NET source) 
-    oky on                  ; power on main zone
-    oky z2 off              ; shut down zone 2
-    oky +                   ; increase volume
-    oky - 5                 ; decrease volume of 5 unit
-    oky cmd IFVQSTN         ; send ISCP command to receiver
+    oky --host 10.0.0.122 state ; print state for receiver at address 10.0.0.122
+    oky source PC               ; set source to PC
+    oky source                  ; print current source and available sources
+    oky z2 source SOURCE        ; set zone 2 source to the same as main zone
+    oky source DLNA             ; set source DLNA(upnp) (this is a sub NET source) 
+    oky source NETRADIO         ; set source NET/RADIO (this is a sub NET source) 
+    oky on                      ; power on main zone
+    oky z2 off                  ; shut down zone 2
+    oky +                       ; increase volume
+    oky - 5                     ; decrease volume of 5 unit
+    oky cmd IFVQSTN             ; send ISCP command to receiver
         
 """
 def main(oky, parser):
@@ -137,12 +114,11 @@ def main(oky, parser):
 
 if __name__ == "__main__":
 
-
     parser = argparse.ArgumentParser(description='Send commands to an Onkyo receiver', add_help=False, epilog=cmd_examples, formatter_class=argparse.RawDescriptionHelpFormatter )
     #parser.add_argument('--help', '-h', help='Display help', default=False, action="store_true")
     parser.add_argument('--verbose', '-v', default=False, action="store_true", help='be verbose')
     parser.add_argument('--host', "--ip", "-h", default=None, help='set ip address')
-    parser.add_argument('--port', "-p",  default=60128, help='set port')
+    parser.add_argument('--port', "-p",  default=None, help='set port')
     parser.add_argument('cmd', nargs="*", help="see examples")
     
     args = parser.parse_args()
@@ -159,26 +135,26 @@ if __name__ == "__main__":
         if len(args.cmd) > 2:
             cmd3 = args.cmd[2]
 
-        if cmd in ("host", "ip", "address"):
-            if cmd2:
-                save_ip( cmd2 )
-                print("stored default ip address:", cmd2)
-                sys.exit(0)
+        host = None
+        port = None
+        if "OKY_ADDRESS" in os.environ:
+            mystr = os.environ["OKY_ADDRESS"]
+            if ":" in mystr:
+                host, port = mystr.split(":")
             else:
-                parser.print_help()
-                sys.exit(1)
-        
+                host = mystr
         if args.host:
             host = args.host
-        elif "OKY_ADDRESS" in os.environ:
-            host = os.environ["OKY_ADDRESS"]
-        else:
-            host = get_ip()
+        if args.port:
+            port = args.port
+        if not port:
+            port = 60128
         if not host:
+            print("Error: Address IP not set")
             parser.print_help()
             sys.exit(1)
 
-        oky = onkyo.Onkyo(host=host, port=args.port, verbose=args.verbose)
+        oky = onkyo.Onkyo(host=host, port=port, verbose=args.verbose)
         try:
             oky.connect()
         except socket.error as ex:
