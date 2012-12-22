@@ -5,20 +5,17 @@ hackish file to crreate deb from setup.py
 
 import subprocess
 from email.utils import formatdate
-from bzrlib.branch import Branch
 
-VERSION = "0.3"
+DEBVERSION = "0.4"
 
-def get_bzr_version():
-    branch = Branch.open(".")
-    rev = str(branch.revno())
-    nick = branch.nick #This seems to only be the parent directory name
-    bzrstring = "bzr" + rev
-    return bzrstring
-
+rev = subprocess.check_output("bzr version-info --check-clean --custom --template='{revno}'", shell=True)
+bzrstring = "bzr" + str(rev).replace("'","")
 
 
 def get_changelog(progname, version, changelog, date):
+    """
+    return a dummy changelog acceptable by debian script engine
+    """
     return """%s (%s) unstable; urgency=low
 
   %s 
@@ -34,7 +31,7 @@ def check_deb(name):
 if __name__ == "__main__":
     check_deb("build-essential")
     f = open("debian/changelog", "w")
-    f.write(get_changelog("onkyocmd", VERSION + get_bzr_version(), "Updated to last chnaes in bzr repository", formatdate()))
+    f.write(get_changelog("onkyocmd", DEBVERSION + bzrstring, "Updated to last changes in bzr repository", formatdate()))
     f.close()
 
     #now build package

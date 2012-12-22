@@ -214,7 +214,7 @@ class Onkyo(object):
         return self._hex2input[source]
 
     def z2setSource(self, source):
-        ans = self._oky.cmd("SLZ" + self._input2hex[source])
+        ans = self._oky.cmd(b"SLZ" + self._input2hex[source])
         return ans[3:]
 
     def z2getPower(self):
@@ -299,7 +299,7 @@ class Onkyo(object):
         val must be between 0 and 80
         """
         val = self._formatVolume(val)
-        ans = self._oky.cmd("ZVL" + val)
+        ans = self._oky.cmd(b"ZVL" + val)
         return int(ans[3:], 16)
 
     def z2getVolume(self):
@@ -329,7 +329,7 @@ class Onkyo(object):
         val must be between 0 and 80
         """
         val = self._formatVolume(val)
-        ans = self._oky.cmd("MVL" + val)
+        ans = self._oky.cmd(b"MVL" + val)
         return int(ans[3:], 16)
 
     def _formatVolume(self, val):
