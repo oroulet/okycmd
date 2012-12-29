@@ -8,7 +8,7 @@ import os
 import argparse
 import socket
 
-import onkyo
+import libonkyo
 
 __author__ = "Olivier Roulet-Dubonnet"
 __copyright__ = "Copyright 2011-2012, Olivier Roulet-Dubonnet"
@@ -154,7 +154,7 @@ if __name__ == "__main__":
             parser.print_help()
             sys.exit(1)
 
-        oky = onkyo.Onkyo(host=host, port=port, verbose=args.verbose)
+        oky = libonkyo.Onkyo(host=host, port=port, verbose=args.verbose)
         try:
             oky.connect()
         except socket.error as ex:
