@@ -130,7 +130,9 @@ class OnkyoTCP(object):
 
 class Onkyo(object):
     """
-    class to send commands to a receiver.
+    Class to send commands to an Onkyo receiver with an TCP interface
+    The address of the receiver must be known, the port is standard but can be overridden if necessary
+    Most methods are not documented since they have obvious names and simple logic
     """
     def __init__(self, host="10.0.0.112", port=60128, verbose=False):
         self._oky = OnkyoTCP(host, port, verbose=verbose)

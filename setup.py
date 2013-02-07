@@ -10,12 +10,12 @@ import make_deb
 
 
 
-setup (name = "onkyocmd", 
+setup (name = "okycmd", 
         version = make_deb.bzrstring,
         description = "Network client to onkyo receiver",
         author = "Olivier R-D",
         url = 'http://launchpad.net/onkyocmd',
-        py_modules=["onkyo"],
+        py_modules=["libonkyo"],
         license = "GNU General Public License",
         scripts = ["oky"]
         )

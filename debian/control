@@ -1,13 +1,20 @@
-Source: onkyocmd
+Source: okycmd
 Maintainer: Olivier R-D <unknown@unknown>
-Section: python
-Priority: optional
-Build-Depends: python3 , debhelper (>= 7.4.3)
-Standards-Version: 3.9.1
+Section: Utilities
+Priority: extra
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.3
+X-Python3-Version: >= 3.1
 
-Package: onkyocmd
+Package: okycmd
 Architecture: all
-Depends: ${misc:Depends}, python3
-Breaks: ${python:Breaks}
+Conflicts: onkyocmd, python3-oky
+Depends: ${python3:Depends}
 Description: Network client to onkyo receiver
+
+#Package: python3-oky
+#Architecture: all
+#Conflicts: onkyocmd, okycmd 
+#Depends: ${python3:Depends}, ${misc:Depends}, python3
+#Description: Network client to onkyo receiver
 

@@ -31,9 +31,10 @@ cmd examples:
     oky z2 off                  ; shut down zone 2
     oky +                       ; increase volume
     oky - 5                     ; decrease volume of 5 unit
-    oky cmd IFVQSTN             ; send ISCP command to receiver
+    oky cmd IFVQSTN             ; send raw ISCP command to receiver
         
 """
+
 def main(oky, parser):
     if cmd == "log":
         oky.log()
