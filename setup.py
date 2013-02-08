@@ -11,7 +11,7 @@ import make_deb
 
 
 setup (name = "okycmd", 
-        version = make_deb.bzrstring,
+        version = make_deb.DEBVERSION,
         description = "Network client to onkyo receiver",
         author = "Olivier R-D",
         url = 'http://launchpad.net/onkyocmd',

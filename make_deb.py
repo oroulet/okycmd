@@ -6,10 +6,7 @@ hackish file to crreate deb from setup.py
 import subprocess
 from email.utils import formatdate
 
-DEBVERSION = "0.5"
-
-rev = subprocess.check_output("bzr version-info --check-clean --custom --template='{revno}'", shell=True)
-bzrstring = "bzr" + str(rev).replace("'","")
+DEBVERSION = "0.6"
 
 
 def get_changelog(progname, version, changelog, date):
@@ -31,7 +28,7 @@ def check_deb(name):
 if __name__ == "__main__":
     check_deb("build-essential")
     f = open("debian/changelog", "w")
-    f.write(get_changelog("okycmd", DEBVERSION + bzrstring, "Updated to last changes in bzr repository", formatdate()))
+    f.write(get_changelog("okycmd", DEBVERSION , "Updated to last changes in repository", formatdate()))
     f.close()
 
     #now build package
