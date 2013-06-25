@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 from distutils.command.install_data import install_data
 
 
@@ -14,10 +14,12 @@ setup (name = "okycmd",
         version = make_deb.DEBVERSION,
         description = "Network client to onkyo receiver",
         author = "Olivier R-D",
-        url = 'http://launchpad.net/onkyocmd',
+        url = 'https://github.com/oroulet/okycmd',
         py_modules=["libonkyo"],
         license = "GNU General Public License",
-        scripts = ["oky"]
+        entry_points = {'console_scripts': 
+                ['oky = libonkyo:main']
+                }
         )
 
 
