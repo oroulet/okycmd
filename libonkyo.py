@@ -305,7 +305,7 @@ class Onkyo(object):
 
     def z2getVolume(self):
         ans = self._oky.cmd("ZVLQSTN")
-        if ans == b"ZVLN/A":#FIXME: what should I do? return string or Noen
+        if ans == b"ZVLN/A":#FIXME: what should I do? return string or None
             return 0 
         return int(ans[3:], 16)
 
@@ -352,9 +352,9 @@ class Onkyo(object):
  
 def main():
     parser = argparse.ArgumentParser(description='Send commands to an Onkyo receiver')
-    parser.add_argument('--verbose', '-v', action="store_false", help='be verbose')
-    parser.add_argument('--ip', default="10.0.0.1", help='IP address to use')
-    parser.add_argument('--port', default=68, help='port number to use')
+    parser.add_argument('--verbose', '-v', action="store_true", help='be verbose')
+    parser.add_argument('--host', default=None, help='IP address to use')
+    parser.add_argument('--port', default=None, help='port number to use')
     parser.add_argument('--zone', "-z",  default="main", help='select zone')
 
     #parser.add_argument('zone', help='zone')
@@ -365,7 +365,7 @@ def main():
 
     args = parser.parse_args()
     print(args)
-    sys.exit(0)
+    #sys.exit(0)
 
     if not args.cmd: # this also catches --help case
         parser.print_help()
@@ -383,14 +383,14 @@ def main():
             host = args.host
         if args.port:
             port = args.port
-        if not port:
+        else:
             port = 60128
         if not host:
             print("Error: Address IP not set")
             parser.print_help()
             sys.exit(1)
 
-        oky = libonkyo.Onkyo(host=host, port=port, verbose=args.verbose)
+        oky = Onkyo(host=host, port=port, verbose=args.verbose)
         try:
             oky.connect()
         except socket.error as ex:
