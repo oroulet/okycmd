@@ -352,16 +352,19 @@ class Onkyo(object):
  
 def main():
     examples = """
+
+Receiver IP address (and port) can be set using OKY_ADDRESS environment variable
+
 cmd examples:
-    oky --host 10.0.0.122 state ; print state for receiver at address 10.0.0.122\n
+    oky --host 10.0.0.122 state ; print state for receiver at address 10.0.0.122
     oky source PC               ; set source to PC
     oky source                  ; print current source and available sources
-    oky -z2 source SOURCE        ; set zone 2 source to the same as main zone
+    oky -z2 source SOURCE       ; set zone 2 source to the same as main zone
     oky source DLNA             ; set source DLNA(upnp) (this is a sub NET source) 
     oky source NETRADIO         ; set source NET/RADIO (this is a sub NET source) 
     oky on                      ; power on main zone
-    oky -z2 off                  ; shut down zone 2
-    oky -z2 +                       ; increase volume
+    oky -z2 off                 ; shut down zone 2
+    oky -z2 +                   ; increase volume
     oky - 5                     ; decrease volume of 5 unit
     oky cmd IFVQSTN             ; send raw ISCP command to receiver
         
