@@ -351,7 +351,24 @@ class Onkyo(object):
         return int(ans[3:], 16)
  
 def main():
-    parser = argparse.ArgumentParser(description='Send commands to an Onkyo receiver')
+    examples = """
+cmd examples:
+    oky --host 10.0.0.122 state ; print state for receiver at address 10.0.0.122\n
+    oky source PC               ; set source to PC
+    oky source                  ; print current source and available sources
+    oky -z2 source SOURCE        ; set zone 2 source to the same as main zone
+    oky source DLNA             ; set source DLNA(upnp) (this is a sub NET source) 
+    oky source NETRADIO         ; set source NET/RADIO (this is a sub NET source) 
+    oky on                      ; power on main zone
+    oky -z2 off                  ; shut down zone 2
+    oky -z2 +                       ; increase volume
+    oky - 5                     ; decrease volume of 5 unit
+    oky cmd IFVQSTN             ; send raw ISCP command to receiver
+        
+"""
+
+
+    parser = argparse.ArgumentParser(description='Send commands to an Onkyo receiver', epilog=examples, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--verbose', '-v', action="store_true", help='be verbose')
     parser.add_argument('--host', default=None, help='IP address to use')
     parser.add_argument('--port', default=None, help='port number to use')
@@ -359,13 +376,13 @@ def main():
 
     #parser.add_argument('zone', help='zone')
     #parser.add_argument('zone', nargs="?", choices=["z2", "main", ""], const="z2", default="main",  help='command to send')
+    #parser.add_argument('cmd', choices=["source", "state"], help='command to send')
     parser.add_argument('cmd', help='command to send')
     parser.add_argument('val', nargs="?", default=None, help='command value')
 
 
     args = parser.parse_args()
-    print(args)
-    #sys.exit(0)
+    #print(args)
 
     if not args.cmd: # this also catches --help case
         parser.print_help()
