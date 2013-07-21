@@ -355,7 +355,7 @@ def main():
     parser.add_argument('--verbose', '-v', action="store_true", help='be verbose')
     parser.add_argument('--host', default=None, help='IP address to use')
     parser.add_argument('--port', default=None, help='port number to use')
-    parser.add_argument('--zone', "-z",  default="main", help='select zone')
+    parser.add_argument('--zone', "-z",  default=1, type=int, choices=[1, 2], help='select zone')
 
     #parser.add_argument('zone', help='zone')
     #parser.add_argument('zone', nargs="?", choices=["z2", "main", ""], const="z2", default="main",  help='command to send')
@@ -406,7 +406,7 @@ def main():
             else:
                 print("cmd requires a value")
                 parser.print_help()
-        elif args.zone == "2":
+        elif args.zone == 2:
             if args.cmd in ("off", "stop"):
                 val = oky.z2off()
                 print("Power: ", val)

@@ -6,7 +6,7 @@ hackish file to crreate deb from setup.py
 import subprocess
 from email.utils import formatdate
 
-DEBVERSION = "0.6"
+DEBVERSION = "0.8"
 
 
 def get_changelog(progname, version, changelog, date):
@@ -33,7 +33,8 @@ if __name__ == "__main__":
 
     #now build package
     #subprocess.check_call("dpkg-buildpackage -rfakeroot -uc -us -b", shell=True)
-    subprocess.check_call("fakeroot dh binary --with python3 --without python2,pysupport,pycentral", shell=True)
+    subprocess.check_call("fakeroot dh binary --with python3 --without python2,python-support,python-central", shell=True)
+    #subprocess.check_call("fakeroot dh binary --with python3", shell=True)
     subprocess.check_call("dh clean", shell=True)
 
 
