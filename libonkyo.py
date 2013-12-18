@@ -157,9 +157,7 @@ class Onkyo(object):
                 "AUDISSEYSETUP":b"FF",
                 "SOURCE":b"80"}
         #no bidirectional dict in python, so improvise
-        self._hex2input = {}
-        for k, v in self._input2hex.items():
-            self._hex2input[v] = k
+        self._hex2input = {v: k for k, v in self._input2hex.items()}
 
     def getSources(self):
         return sorted(self._input2hex.keys())
