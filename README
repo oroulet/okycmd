@@ -1,8 +1,8 @@
 oky is a command line program to control an onkyo receiver. It works by receiving and sending ISCP commands to the receiver over a socket.
 
 This project includes 2 files
-    onkyo.py:  a library implemented the protocol to communicate with the onkyo receiver
+    onkyo.py:  a library implementing the protocol to communicate with the onkyo receiver
     oky: a command line interface to onkyo.py
 
 It has been developed for and tested with an Onkyo TX-NR609 but using older documentation for serial interface so it should in theory works with many models.
-Only the subset of commands I had use for are implemented.
+Only the subset of commands I have use for are implemented, it is however used almost every day and stable
