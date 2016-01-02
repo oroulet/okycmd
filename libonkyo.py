@@ -69,14 +69,14 @@ class OnkyoTCP(object):
         self._socket.sendall(line)
         start = time.time()
         while True:
-            ans = self._readStream()
+            ans = self._read_stream()
             if ans[:3] == cmd[:3]:
                 return ans
             if time.time() - start > 1:
                 raise ISCPError("Receiver did not correctly acknowledge command,  sent: %s, received: %s" % (cmd, ans))
         return ans
 
-    def _readStream(self, timeout=None):
+    def _read_stream(self, timeout=None):
         """
         read something from stream and return the first well formated packet
         put the rest on a queue which is read at next call of this method
@@ -150,27 +150,27 @@ class Onkyo(object):
         # no bidirectional dict in python, so improvise
         self._hex2input = {v: k for k, v in self._input2hex.items()}
 
-    def getSources(self):
+    def get_sources(self):
         return sorted(self._input2hex.keys())
 
     def connect(self):
         self._oky.connect()
 
-    def sendCommand(self, cmd):
+    def send_command(self, cmd):
         return self._oky.cmd(cmd)
 
-    def getAudioInformation(self):
+    def get_audio_information(self):
         return self._oky.cmd("IFAQSTN")[3:]
 
-    def getVideoInformation(self):
+    def get_video_information(self):
         return self._oky.cmd("IFVQSTN")[3:]
 
-    def printState(self):
-        power = self.getPower()
-        source = self.getSource()
-        vol = self.getVolume()
-        video = self.getVideoInformation()
-        audio = self.getAudioInformation()
+    def print_state(self):
+        power = self.get_power()
+        source = self.get_source()
+        vol = self.get_volume()
+        video = self.get_video_information()
+        audio = self.get_audio_information()
         print("""
         Main power: {}
         Main source: {} 
@@ -179,30 +179,30 @@ class Onkyo(object):
         Main video: {} 
         """.format(power, source, vol, audio, video))
 
-        z2power = self.z2getPower()
-        z2source = self.z2getSource()
-        z2vol = self.z2getVolume()
+        z2power = self.z2_get_power()
+        z2_source = self.z2_get_source()
+        z2_vol = self.z2_get_volume()
         print("""
         Zone2 power: {}
         Zone2 source: {}
         Zone2 volume (0-100): {}
-        """ .format(z2power, z2source, z2vol))
+        """ .format(z2power, z2_source, z2_vol))
 
     def close(self):
         self._oky.close()
 
-    def getPower(self):
+    def get_power(self):
         return self._oky.cmd("PWRQSTN")[3:]
 
-    def z2getSource(self):
+    def z2_get_source(self):
         source = self._oky.cmd("SLZQSTN")[3:]
         return self._hex2input[source]
 
-    def z2setSource(self, source):
+    def z2_set_source(self, source):
         ans = self._oky.cmd(b"SLZ" + self._input2hex[source])
         return ans[3:]
 
-    def z2getPower(self):
+    def z2_get_power(self):
         return self._oky.cmd("ZPWQSTN")[3:]
 
     def z2mute(self):
@@ -211,38 +211,38 @@ class Onkyo(object):
     def z2unmute(self):
         return self._oky.cmd("ZMT01")[3:]
 
-    def z2bassUp(self):
+    def z2_bass_up(self):
         val = self._oky.cmd("ZTNBUP")[3:]
         if val == b"N/A":
             return val, val
         else:
             return int(val[:2], 16), int(val[2:], 16)
 
-    def z2bassDown(self):
+    def z2_bass_down(self):
         val = self._oky.cmd("ZTNBDOWN")[3:]
         if val == b"N/A":
             return val, val
         else:
             return int(val[:2], 16), int(val[2:], 16)
 
-    def z2getTone(self):
+    def z2_get_tone(self):
         val = self._oky.cmd("ZTNQSTN")[3:]
         if val == b"N/A":
             return val, val
         else:
             return int(val[:2], 16), int(val[2:], 16)
 
-    def z2trebleUp(self):
+    def z2_treble_up(self):
         return self._oky.cmd("ZTNTUP")[3:]
 
-    def z2trebleDown(self):
+    def z2_treble_down(self):
         return self._oky.cmd("ZTNTDOWN")[3:]
 
-    def getSource(self):
+    def get_source(self):
         source = self._oky.cmd("SLIQSTN")[3:]
         return self._hex2input[source]
 
-    def setSource(self, source):
+    def set_source(self, source):
         ans = self._oky.cmd(b"SLI" + self._input2hex[source])
         return self._hex2input[ans[3:]]
 
@@ -262,61 +262,61 @@ class Onkyo(object):
         ans = self._oky.cmd("ZPW00")
         return ans[3:]
 
-    def z2volumeUp(self, val=None):
+    def z2_volume_up(self, val=None):
         if not val:
             ans = self._oky.cmd("ZVLUP")
             return int(ans[3:], 16)
         else:
-            current = self.z2getVolume()
-            return self.z2setVolume(current + int(val))
+            current = self.z2_get_volume()
+            return self.z2_set_volume(current + int(val))
 
-    def z2volumeDown(self, val=None):
+    def z2_volume_down(self, val=None):
         if not val:
             ans = self._oky.cmd("ZVLDOWN")
             return int(ans[3:], 16)
         else:
-            current = self.z2getVolume()
-            return self.z2setVolume(current - int(val))
+            current = self.z2_get_volume()
+            return self.z2_set_volume(current - int(val))
 
-    def z2setVolume(self, val):
+    def z2_set_volume(self, val):
         """
         val must be between 0 and 80
         """
-        val = self._formatVolume(val)
+        val = self._format_volume(val)
         ans = self._oky.cmd(b"ZVL" + val)
         return int(ans[3:], 16)
 
-    def z2getVolume(self):
+    def z2_get_volume(self):
         ans = self._oky.cmd("ZVLQSTN")
         if ans == b"ZVLN/A":  # FIXME: what should I do? return string or None
             return 0
         return int(ans[3:], 16)
 
-    def volumeUp(self, val=None):
+    def volume_up(self, val=None):
         if not val:
             ans = self._oky.cmd("MVLUP")
             return int(ans[3:], 16)
         else:
-            current = self.getVolume()
-            return self.setVolume(current + int(val))
+            current = self.get_volume()
+            return self.set_volume(current + int(val))
 
-    def volumeDown(self, val=None):
+    def volume_down(self, val=None):
         if not val:
             ans = self._oky.cmd("MVLDOWN")
             return int(ans[3:], 16)
         else:
-            current = self.getVolume()
-            return self.setVolume(current - int(val))
+            current = self.get_volume()
+            return self.set_volume(current - int(val))
 
-    def setVolume(self, val):
+    def set_volume(self, val):
         """
         val must be between 0 and 80
         """
-        val = self._formatVolume(val)
+        val = self._format_volume(val)
         ans = self._oky.cmd(b"MVL" + val)
         return int(ans[3:], 16)
 
-    def _formatVolume(self, val):
+    def _format_volume(self, val):
         val = int(val)
         if val < 0:
             val = 0
@@ -327,7 +327,7 @@ class Onkyo(object):
             val = b"0" + val
         return val
 
-    def getVolume(self):
+    def get_volume(self):
         ans = self._oky.cmd("MVLQSTN")
         if ans == b"MVLN/A":
             return 0
@@ -431,36 +431,36 @@ def send_z2_command(args, parser, oky):
         v = args.cmd[1:]
         if not v:
             v = "1"
-        val = oky.z2volumeUp(v)
+        val = oky.z2_volume_up(v)
         print("Volume is: ", val)
     elif args.cmd.startswith("-"):
         v = args.cmd[1:]
         if not v:
             v = "1"
-        val = oky.z2volumeDown(v)
+        val = oky.z2_volume_down(v)
         print("Volume: ", val)
     elif args.cmd in ("vol", "volume"):
         if args.val:
-            val = oky.z2setVolume(args.val)
+            val = oky.z2_set_volume(args.val)
         else:
-            val = oky.z2getVolume()
+            val = oky.z2_get_volume()
         print("Volume: ", val)
     elif args.cmd == "source":
         if args.val:
-            source = oky.z2setSource(args.val)
-            print("Source: ", oky.z2getSource())
+            source = oky.z2_set_source(args.val)
+            print("Source: ", oky.z2_get_source())
         else:
-            source = oky.z2getSource()
-            sources = oky.getSources()
+            source = oky.z2_get_source()
+            sources = oky.get_sources()
             print("Source: ", source)
             print("Available sources: ", sources)
     elif args.cmd == "bass":
         if args.val in ("+", "up"):
-            bass, treble = oky.z2bassUp()
+            bass, treble = oky.z2_bass_up()
         elif args.val in ("-", "down"):
-            bass, treble = oky.z2bassDown()
+            bass, treble = oky.z2_bass_down()
         else:
-            bass, treble = oky.z2getTone()
+            bass, treble = oky.z2_get_tone()
         print("Bass: ", bass)
         print("Treble: ", treble)
     else:
@@ -471,14 +471,14 @@ def send_command(args, parser, oky):
     if args.cmd == "cmd":
         if args.val:
             print("Sending raw command to receiver", args.val)
-            print(oky.sendCommand(args.val))
+            print(oky.send_command(args.val))
         else:
             print("cmd requires a value")
             parser.print_help()
     elif args.zone == 2:
         send_z2_command(args, parser, oky)
     elif args.cmd == "state":
-        oky.printState()
+        oky.print_state()
     elif args.cmd in("stop", "off"):
         val = oky.off()
         print("Power: ", val)
@@ -487,29 +487,29 @@ def send_command(args, parser, oky):
         print("Power: ", val)
     elif args.cmd == "source":
         if args.val:
-            source = oky.setSource(args.val)
+            source = oky.set_source(args.val)
         else:
-            source = oky.getSource()
-        sources = oky.getSources()
+            source = oky.get_source()
+        sources = oky.get_sources()
         print("Source: ", source)
         print("Available sources: ", sources)
     elif args.cmd.startswith("+"):
         v = args.cmd[1:]
         if not v:
             v = "1"
-        val = oky.volumeUp(v)
+        val = oky.volume_up(v)
         print("Volume: ", val)
     elif args.cmd.startswith("-"):
         v = args.cmd[1:]
         if not v:
             v = "1"
-        val = oky.volumeDown(v)
+        val = oky.volume_down(v)
         print("Volume: ", val)
     elif args.cmd in ("vol", "volume"):
         if args.val:
-            val = oky.setVolume(args.val)
+            val = oky.set_volume(args.val)
         else:
-            val = oky.getVolume()
+            val = oky.get_volume()
         print("Volume: ", val)
     else:
         parser.print_help()
