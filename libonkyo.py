@@ -9,10 +9,11 @@ import time
 import sys
 import os
 import argparse
+import logging
 
 
 __author__ = "Olivier Roulet-Dubonnet"
-__copyright__ = "Copyright 2011-2013, Olivier Roulet-Dubonnet"
+__copyright__ = "Copyright 2011-2016, Olivier Roulet-Dubonnet"
 __license__ = "GPLv3"
 
 
@@ -25,24 +26,19 @@ class OnkyoTCP(object):
     control an onkyo receiver through its tcp interface
     """
 
-    def __init__(self, host="10.0.0.112", port=60128, verbose=False):
+    def __init__(self, host="10.0.0.112", port=60128):
         self._ip = host
         self._port = port
         self._socket = None
         self._rest = bytes()
-        self._verbose = verbose
         self.lastmsg = ""  # debugging
-
-    def _log(self, *args):
-        if self._verbose:
-            log = [str(i) for i in args]
-            print("Onkyo: ".join(log))
+        self._logger = logging.getLogger("libonkyo")
 
     def connect(self):
         """
         connect to receiver
         """
-        self._log("Connecting to: %s:%s" % (self._ip, self._port))
+        self._logger.info("Connecting to: %s:%s", self._ip, self._port)
         # receiver is supposd to answer in 50 ms but in practice this may take several seconds
         self._socket = socket.create_connection((self._ip, self._port), timeout=2)
 
@@ -50,7 +46,7 @@ class OnkyoTCP(object):
         """
         cleanup
         """
-        self._log("Closing socket")
+        self._logger.info("Closing socket")
         self._socket.close()
 
     def cmd(self, cmd):
@@ -60,7 +56,7 @@ class OnkyoTCP(object):
         """
         if isinstance(cmd, str):
             cmd = cmd.encode()  # create byte string from text string otherwise hope it is a byte array
-        self._log("Sending: ", cmd)
+        self._logger.info("Sending: %s", cmd)
         headersize = struct.pack(">i", 16)
         datasize = struct.pack(">i", len(cmd) + 1)
         version = b"\x01"
@@ -80,12 +76,6 @@ class OnkyoTCP(object):
                 raise ISCPError("Receiver did not correctly acknowledge command,  sent: %s, received: %s" % (cmd, ans))
         return ans
 
-    def log(self, output=sys.stdout):
-        while True:
-            ans = self._readStream(timeout=36000)
-            output.write(ans + "\n")
-            output.flush()
-
     def _readStream(self, timeout=None):
         """
         read something from stream and return the first well formated packet
@@ -97,7 +87,7 @@ class OnkyoTCP(object):
         ans = self._socket.recv(1024)
         ans = self._rest + ans
         cmd, self._rest = self._parse(ans)
-        self._log("received: ", cmd)
+        self._logger.info("received: %s", cmd)
         return cmd
 
     def _parse(self, msg):
@@ -134,8 +124,8 @@ class Onkyo(object):
     Most methods are not documented since they have obvious names and simple logic
     """
 
-    def __init__(self, host="10.0.0.112", port=60128, verbose=False):
-        self._oky = OnkyoTCP(host, port, verbose=verbose)
+    def __init__(self, host="10.0.0.112", port=60128):
+        self._oky = OnkyoTCP(host, port)
         self._input2hex = {
             "VCR/DVR": b"00",
             "CBL/STAT": b"01",
@@ -163,9 +153,6 @@ class Onkyo(object):
     def getSources(self):
         return sorted(self._input2hex.keys())
 
-    def log(self):
-        self._oky.log()
-
     def connect(self):
         self._oky.connect()
 
@@ -185,23 +172,21 @@ class Onkyo(object):
         video = self.getVideoInformation()
         audio = self.getAudioInformation()
         print("""
-        Main power: %s
-        Main source: %s
-        Main volume (0-100): %s
-        Main audio: %s
-        Main video: %s
-        """ % (power, source, vol, audio, video)
-              )
+        Main power: {}
+        Main source: {} 
+        Main volume (0-100): {} 
+        Main audio: {} 
+        Main video: {} 
+        """.format(power, source, vol, audio, video))
 
         z2power = self.z2getPower()
         z2source = self.z2getSource()
         z2vol = self.z2getVolume()
         print("""
-        Zone2 power: %s
-        Zone2 source: %s
-        Zone2 volume (0-100): %s
-        """ % (z2power, z2source, z2vol)
-              )
+        Zone2 power: {}
+        Zone2 source: {}
+        Zone2 volume (0-100): {}
+        """ .format(z2power, z2source, z2vol))
 
     def close(self):
         self._oky.close()
@@ -349,7 +334,7 @@ class Onkyo(object):
         return int(ans[3:], 16)
 
 
-def main():
+def make_parser():
     examples = """
 
 Receiver IP address (and port) can be set using OKY_ADDRESS environment variable
@@ -375,137 +360,159 @@ cmd examples:
     parser.add_argument('--port', default=None, help='port number to use')
     parser.add_argument('--zone', "-z", default=1, type=int, choices=[1, 2], help='select zone')
 
-    #parser.add_argument('zone', help='zone')
-    #parser.add_argument('zone', nargs="?", choices=["z2", "main", ""], const="z2", default="main",  help='command to send')
-    #parser.add_argument('cmd', choices=["source", "state"], help='command to send')
     parser.add_argument('cmd', help='command to send')
     parser.add_argument('val', nargs="?", default=None, help='command value')
 
+    return parser
+
+
+def parse_args(parser):
     args = parser.parse_args()
     # print(args)
+
+    loglevel = logging.DEBUG if args.verbose else logging.WARNING
+    logging.basicConfig(level=loglevel)
 
     if not args.cmd:  # this also catches --help case
         parser.print_help()
         sys.exit(1)
-    else:
-        host = None
-        port = None
-        if "OKY_ADDRESS" in os.environ:
-            mystr = os.environ["OKY_ADDRESS"]
-            if ":" in mystr:
-                host, port = mystr.split(":")
-            else:
-                host = mystr
-        if args.host:
-            host = args.host
-        if args.port:
-            port = args.port
+
+    return args
+
+
+def get_host_and_port(args, parser):
+    host = None
+    port = None
+    if "OKY_ADDRESS" in os.environ:
+        mystr = os.environ["OKY_ADDRESS"]
+        if ":" in mystr:
+            host, port = mystr.split(":")
         else:
-            port = 60128
-        if not host:
-            print("Error: Address IP not set")
-            parser.print_help()
-            sys.exit(1)
+            host = mystr
+    if args.host:
+        host = args.host
+    if args.port:
+        port = args.port
+    else:
+        port = 60128
+    if not host:
+        print("Error: Address IP not set")
+        parser.print_help()
+        sys.exit(1)
 
-        oky = Onkyo(host=host, port=port, verbose=args.verbose)
-        try:
-            oky.connect()
-        except socket.error as ex:
-            print("Error connecting to device: ", ex)
-            sys.exit(1)
+    return host, port
 
-        if args.cmd == "log":
-            oky.log()
-        elif args.cmd == "cmd":
-            if args.val:
-                print("Sending raw command to receiver", args.val)
-                print(oky.sendCommand(args.val))
-            else:
-                print("cmd requires a value")
-                parser.print_help()
-        elif args.zone == 2:
-            if args.cmd in ("off", "stop"):
-                val = oky.z2off()
-                print("Power: ", val)
-            elif args.cmd in ("start", "on"):
-                val = oky.z2power()
-                print("Power: ", val)
-            elif args.cmd.startswith("+"):
-                v = args.cmd[1:]
-                if not v:
-                    v = "1"
-                val = oky.z2volumeUp(v)
-                print("Volume is: ", val)
-            elif args.cmd.startswith("-"):
-                v = args.cmd[1:]
-                if not v:
-                    v = "1"
-                val = oky.z2volumeDown(v)
-                print("Volume: ", val)
-            elif args.cmd in ("vol", "volume"):
-                if args.val:
-                    val = oky.z2setVolume(args.val)
-                else:
-                    val = oky.z2getVolume()
-                print("Volume: ", val)
-            elif args.cmd == "source":
-                if args.val:
-                    source = oky.z2setSource(args.val)
-                    print("Source: ", oky.z2getSource())
-                else:
-                    source = oky.z2getSource()
-                    sources = oky.getSources()
-                    print("Source: ", source)
-                    print("Available sources: ", sources)
-            elif args.cmd == "bass":
-                if args.val in ("+", "up"):
-                    bass, treble = oky.z2bassUp()
-                elif args.val in ("-", "down"):
-                    bass, treble = oky.z2bassDown()
-                else:
-                    bass, treble = oky.z2getTone()
-                print("Bass: ", bass)
-                print("Treble: ", treble)
-            else:
-                parser.print_help()
-        elif args.cmd == "state":
-            oky.printState()
-        elif args.cmd in("stop", "off"):
-            val = oky.off()
-            print("Power: ", val)
-        elif args.cmd in ("on", "start"):
-            val = oky.power()
-            print("Power: ", val)
-        elif args.cmd == "source":
-            if args.val:
-                source = oky.setSource(args.val)
-            else:
-                source = oky.getSource()
+
+def main():
+    parser = make_parser()
+    args = parse_args(parser)
+    host, port = get_host_and_port(args, parser)
+
+    oky = Onkyo(host=host, port=port)
+    try:
+        oky.connect()
+    except socket.error as ex:
+        print("Error connecting to device: ", ex)
+        sys.exit(1)
+
+    send_command(args, parser, oky)
+
+    oky.close()
+
+
+def send_z2_command(args, parser, oky):
+    if args.cmd in ("off", "stop"):
+        val = oky.z2off()
+        print("Power: ", val)
+    elif args.cmd in ("start", "on"):
+        val = oky.z2power()
+        print("Power: ", val)
+    elif args.cmd.startswith("+"):
+        v = args.cmd[1:]
+        if not v:
+            v = "1"
+        val = oky.z2volumeUp(v)
+        print("Volume is: ", val)
+    elif args.cmd.startswith("-"):
+        v = args.cmd[1:]
+        if not v:
+            v = "1"
+        val = oky.z2volumeDown(v)
+        print("Volume: ", val)
+    elif args.cmd in ("vol", "volume"):
+        if args.val:
+            val = oky.z2setVolume(args.val)
+        else:
+            val = oky.z2getVolume()
+        print("Volume: ", val)
+    elif args.cmd == "source":
+        if args.val:
+            source = oky.z2setSource(args.val)
+            print("Source: ", oky.z2getSource())
+        else:
+            source = oky.z2getSource()
             sources = oky.getSources()
             print("Source: ", source)
             print("Available sources: ", sources)
-        elif args.cmd.startswith("+"):
-            v = args.cmd[1:]
-            if not v:
-                v = "1"
-            val = oky.volumeUp(v)
-            print("Volume: ", val)
-        elif args.cmd.startswith("-"):
-            v = args.cmd[1:]
-            if not v:
-                v = "1"
-            val = oky.volumeDown(v)
-            print("Volume: ", val)
-        elif args.cmd in ("vol", "volume"):
-            if args.val:
-                val = oky.setVolume(args.val)
-            else:
-                val = oky.getVolume()
-            print("Volume: ", val)
+    elif args.cmd == "bass":
+        if args.val in ("+", "up"):
+            bass, treble = oky.z2bassUp()
+        elif args.val in ("-", "down"):
+            bass, treble = oky.z2bassDown()
         else:
-            parser.print_help()
+            bass, treble = oky.z2getTone()
+        print("Bass: ", bass)
+        print("Treble: ", treble)
+    else:
+        parser.print_help()
 
-        oky.close()
+
+def send_command(args, parser, oky):
+    if args.cmd == "cmd":
+        if args.val:
+            print("Sending raw command to receiver", args.val)
+            print(oky.sendCommand(args.val))
+        else:
+            print("cmd requires a value")
+            parser.print_help()
+    elif args.zone == 2:
+        send_z2_command(args, parser, oky)
+    elif args.cmd == "state":
+        oky.printState()
+    elif args.cmd in("stop", "off"):
+        val = oky.off()
+        print("Power: ", val)
+    elif args.cmd in ("on", "start"):
+        val = oky.power()
+        print("Power: ", val)
+    elif args.cmd == "source":
+        if args.val:
+            source = oky.setSource(args.val)
+        else:
+            source = oky.getSource()
+        sources = oky.getSources()
+        print("Source: ", source)
+        print("Available sources: ", sources)
+    elif args.cmd.startswith("+"):
+        v = args.cmd[1:]
+        if not v:
+            v = "1"
+        val = oky.volumeUp(v)
+        print("Volume: ", val)
+    elif args.cmd.startswith("-"):
+        v = args.cmd[1:]
+        if not v:
+            v = "1"
+        val = oky.volumeDown(v)
+        print("Volume: ", val)
+    elif args.cmd in ("vol", "volume"):
+        if args.val:
+            val = oky.setVolume(args.val)
+        else:
+            val = oky.getVolume()
+        print("Volume: ", val)
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":
