@@ -3,17 +3,17 @@ library to control an onkyo receiver over TCP/IP
 it contains one client class called Onkyo
 """
 
-__author__ = "Olivier Roulet-Dubonnet"
-__copyright__ = "Copyright 2011-2013, Olivier Roulet-Dubonnet"
-__license__ = "GPLv3"
-
-
 import socket
 import struct
 import time
 import sys
 import os
 import argparse
+
+
+__author__ = "Olivier Roulet-Dubonnet"
+__copyright__ = "Copyright 2011-2013, Olivier Roulet-Dubonnet"
+__license__ = "GPLv3"
 
 
 class ISCPError(Exception):
@@ -24,13 +24,14 @@ class OnkyoTCP(object):
     """
     control an onkyo receiver through its tcp interface
     """
+
     def __init__(self, host="10.0.0.112", port=60128, verbose=False):
         self._ip = host
         self._port = port
         self._socket = None
         self._rest = bytes()
         self._verbose = verbose
-        self.lastmsg = "" # debugging
+        self.lastmsg = ""  # debugging
 
     def _log(self, *args):
         if self._verbose:
@@ -41,8 +42,8 @@ class OnkyoTCP(object):
         """
         connect to receiver
         """
-        self._log( "Connecting to: %s:%s" % (self._ip, self._port))
-        #receiver is supposd to answer in 50 ms but in practice this may take several seconds
+        self._log("Connecting to: %s:%s" % (self._ip, self._port))
+        # receiver is supposd to answer in 50 ms but in practice this may take several seconds
         self._socket = socket.create_connection((self._ip, self._port), timeout=2)
 
     def close(self):
@@ -57,17 +58,17 @@ class OnkyoTCP(object):
         send cmd to receiver with correct format
         the code is formated to follow as clearly as possible the specification, not to be efficient
         """
-        if type(cmd) == str:
-            cmd = cmd.encode() # create byte string from text string otherwise hope it is a byte array
-        self._log( "Sending: ", cmd)
-        headersize = struct.pack( ">i", 16)
-        datasize = struct.pack( ">i",  len(cmd)+1 ) 
+        if isinstance(cmd, str):
+            cmd = cmd.encode()  # create byte string from text string otherwise hope it is a byte array
+        self._log("Sending: ", cmd)
+        headersize = struct.pack(">i", 16)
+        datasize = struct.pack(">i", len(cmd) + 1)
         version = b"\x01"
         reserved = b"\x00\x00\x00"
         datastart = b"!"
         unittype = b"1"
         end = b"\r"
-        header = b"ISCP" + headersize + datasize + version + reserved 
+        header = b"ISCP" + headersize + datasize + version + reserved
         line = header + datastart + unittype + cmd + end
         self._socket.sendall(line)
         start = time.time()
@@ -82,7 +83,7 @@ class OnkyoTCP(object):
     def log(self, output=sys.stdout):
         while True:
             ans = self._readStream(timeout=36000)
-            output.write(ans+"\n")
+            output.write(ans + "\n")
             output.flush()
 
     def _readStream(self, timeout=None):
@@ -96,7 +97,7 @@ class OnkyoTCP(object):
         ans = self._socket.recv(1024)
         ans = self._rest + ans
         cmd, self._rest = self._parse(ans)
-        self._log( "received: ", cmd )
+        self._log("received: ", cmd)
         return cmd
 
     def _parse(self, msg):
@@ -106,25 +107,24 @@ class OnkyoTCP(object):
         en example answer is:
         'ISCP\x00\x00\x00\x10\x00\x00\x00\n\x01\x00\x00\x00!1PWR00\x1a\r\n'
         """
-        self.lastmsg = msg # debuging
+        self.lastmsg = msg  # debuging
         while msg and not msg.startswith(b"ISCP"):
             msg = msg[1:]
         if len(msg) < 12:
             return "", msg
         headersize = struct.unpack(">i", msg[4:8])[0]
         size = struct.unpack(">i", msg[8:12])[0]
-        #print "size of header is ", headersize 
-        #print "size of data is ", size 
-        totalsize = headersize + size # contrarely to cmd we send, it seems the datasize includes end and start chars 
-        #print "total size should be ", totalsize 
+        # print "size of header is ", headersize
+        # print "size of data is ", size
+        totalsize = headersize + size  # contrarely to cmd we send, it seems the datasize includes end and start chars
+        # print "total size should be ", totalsize
         if len(msg) < totalsize:
             return "", msg
         msg = msg[:totalsize]
         rest = msg[totalsize:]
         data = msg[headersize:totalsize]
-        cmd = data[2:-3] 
+        cmd = data[2:-3]
         return cmd, rest
-
 
 
 class Onkyo(object):
@@ -133,30 +133,31 @@ class Onkyo(object):
     The address of the receiver must be known, the port is standard but can be overridden if necessary
     Most methods are not documented since they have obvious names and simple logic
     """
+
     def __init__(self, host="10.0.0.112", port=60128, verbose=False):
         self._oky = OnkyoTCP(host, port, verbose=verbose)
         self._input2hex = {
-                "VCR/DVR":b"00",
-                "CBL/STAT":b"01", 
-                "GAME":b"02",
-                "AUX":b"03",
-                "AUX2":b"04",
-                "PC":b"05",
-                "BD/DVD":b"10",
-                "TV/CD":b"23",
-                "TUNER":b"24",
-                "USB":b"29",
-                "USB2":b"2A",
-                "NET":b"2B",
-                "DLNA":b"27",
-                "NETRADIO":b"28",
-                "PORT":b"40",
-                "UP":b"UP",
-                "DOWN":b"DOWN",
-                "7F":b"OFF",
-                "AUDISSEYSETUP":b"FF",
-                "SOURCE":b"80"}
-        #no bidirectional dict in python, so improvise
+            "VCR/DVR": b"00",
+            "CBL/STAT": b"01",
+            "GAME": b"02",
+            "AUX": b"03",
+            "AUX2": b"04",
+            "PC": b"05",
+            "BD/DVD": b"10",
+            "TV/CD": b"23",
+            "TUNER": b"24",
+            "USB": b"29",
+            "USB2": b"2A",
+            "NET": b"2B",
+            "DLNA": b"27",
+            "NETRADIO": b"28",
+            "PORT": b"40",
+            "UP": b"UP",
+            "DOWN": b"DOWN",
+            "7F": b"OFF",
+            "AUDISSEYSETUP": b"FF",
+            "SOURCE": b"80"}
+        # no bidirectional dict in python, so improvise
         self._hex2input = {v: k for k, v in self._input2hex.items()}
 
     def getSources(self):
@@ -190,7 +191,7 @@ class Onkyo(object):
         Main audio: %s
         Main video: %s
         """ % (power, source, vol, audio, video)
-        )
+              )
 
         z2power = self.z2getPower()
         z2source = self.z2getSource()
@@ -200,7 +201,7 @@ class Onkyo(object):
         Zone2 source: %s
         Zone2 volume (0-100): %s
         """ % (z2power, z2source, z2vol)
-        )
+              )
 
     def close(self):
         self._oky.close()
@@ -209,7 +210,7 @@ class Onkyo(object):
         return self._oky.cmd("PWRQSTN")[3:]
 
     def z2getSource(self):
-        source =  self._oky.cmd("SLZQSTN")[3:]
+        source = self._oky.cmd("SLZQSTN")[3:]
         return self._hex2input[source]
 
     def z2setSource(self, source):
@@ -240,7 +241,7 @@ class Onkyo(object):
             return int(val[:2], 16), int(val[2:], 16)
 
     def z2getTone(self):
-        val =  self._oky.cmd("ZTNQSTN")[3:]
+        val = self._oky.cmd("ZTNQSTN")[3:]
         if val == b"N/A":
             return val, val
         else:
@@ -284,7 +285,6 @@ class Onkyo(object):
             current = self.z2getVolume()
             return self.z2setVolume(current + int(val))
 
-
     def z2volumeDown(self, val=None):
         if not val:
             ans = self._oky.cmd("ZVLDOWN")
@@ -303,8 +303,8 @@ class Onkyo(object):
 
     def z2getVolume(self):
         ans = self._oky.cmd("ZVLQSTN")
-        if ans == b"ZVLN/A":#FIXME: what should I do? return string or None
-            return 0 
+        if ans == b"ZVLN/A":  # FIXME: what should I do? return string or None
+            return 0
         return int(ans[3:], 16)
 
     def volumeUp(self, val=None):
@@ -336,10 +336,10 @@ class Onkyo(object):
         if val < 0:
             val = 0
         elif val > 80:
-            val = 25 # do not break anything
+            val = 25  # do not break anything
         val = hex(val).upper()[2:].encode()
         if len(val) < 2:
-            val = b"0" + val  
+            val = b"0" + val
         return val
 
     def getVolume(self):
@@ -347,7 +347,8 @@ class Onkyo(object):
         if ans == b"MVLN/A":
             return 0
         return int(ans[3:], 16)
- 
+
+
 def main():
     examples = """
 
@@ -358,22 +359,21 @@ cmd examples:
     oky source PC               ; set source to PC
     oky source                  ; print current source and available sources
     oky -z2 source SOURCE       ; set zone 2 source to the same as main zone
-    oky source DLNA             ; set source DLNA(upnp) (this is a sub NET source) 
-    oky source NETRADIO         ; set source NET/RADIO (this is a sub NET source) 
+    oky source DLNA             ; set source DLNA(upnp) (this is a sub NET source)
+    oky source NETRADIO         ; set source NET/RADIO (this is a sub NET source)
     oky on                      ; power on main zone
     oky -z2 off                 ; shut down zone 2
     oky -z2 +                   ; increase volume
     oky - 5                     ; decrease volume of 5 unit
     oky cmd IFVQSTN             ; send raw ISCP command to receiver
-        
-"""
 
+"""
 
     parser = argparse.ArgumentParser(description='Send commands to an Onkyo receiver', epilog=examples, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--verbose', '-v', action="store_true", help='be verbose')
     parser.add_argument('--host', default=None, help='IP address to use')
     parser.add_argument('--port', default=None, help='port number to use')
-    parser.add_argument('--zone', "-z",  default=1, type=int, choices=[1, 2], help='select zone')
+    parser.add_argument('--zone', "-z", default=1, type=int, choices=[1, 2], help='select zone')
 
     #parser.add_argument('zone', help='zone')
     #parser.add_argument('zone', nargs="?", choices=["z2", "main", ""], const="z2", default="main",  help='command to send')
@@ -381,11 +381,10 @@ cmd examples:
     parser.add_argument('cmd', help='command to send')
     parser.add_argument('val', nargs="?", default=None, help='command value')
 
-
     args = parser.parse_args()
-    #print(args)
+    # print(args)
 
-    if not args.cmd: # this also catches --help case
+    if not args.cmd:  # this also catches --help case
         parser.print_help()
         sys.exit(1)
     else:
@@ -436,25 +435,25 @@ cmd examples:
                 if not v:
                     v = "1"
                 val = oky.z2volumeUp(v)
-                print("Volume is: ", val) 
+                print("Volume is: ", val)
             elif args.cmd.startswith("-"):
                 v = args.cmd[1:]
                 if not v:
                     v = "1"
                 val = oky.z2volumeDown(v)
-                print("Volume: ", val) 
+                print("Volume: ", val)
             elif args.cmd in ("vol", "volume"):
                 if args.val:
                     val = oky.z2setVolume(args.val)
                 else:
                     val = oky.z2getVolume()
-                print("Volume: ", val) 
+                print("Volume: ", val)
             elif args.cmd == "source":
                 if args.val:
                     source = oky.z2setSource(args.val)
                     print("Source: ", oky.z2getSource())
                 else:
-                    source =  oky.z2getSource()
+                    source = oky.z2getSource()
                     sources = oky.getSources()
                     print("Source: ", source)
                     print("Available sources: ", sources)
@@ -481,7 +480,7 @@ cmd examples:
             if args.val:
                 source = oky.setSource(args.val)
             else:
-                source =  oky.getSource()
+                source = oky.getSource()
             sources = oky.getSources()
             print("Source: ", source)
             print("Available sources: ", sources)
@@ -502,18 +501,12 @@ cmd examples:
                 val = oky.setVolume(args.val)
             else:
                 val = oky.getVolume()
-            print("Volume: ", val) 
+            print("Volume: ", val)
         else:
             parser.print_help()
 
-
-
         oky.close()
-
-       
 
 
 if __name__ == "__main__":
     main()
-
-
